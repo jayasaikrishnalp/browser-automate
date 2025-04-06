@@ -1,5 +1,7 @@
 # Project specific
 .qodo
+.windsurfrules
+agent_screenshots/
 
 # Environment variables
 .env

@@ -6,6 +6,7 @@ The agent can search for information and perform calculations.
 import os
 from dotenv import load_dotenv
 from typing import List, Dict, Any
+from langchain import hub
 
 # Load environment variables from .env file
 load_dotenv()
@@ -14,6 +15,9 @@ load_dotenv()
 USE_ANTHROPIC = os.getenv("USE_ANTHROPIC", "false").lower() == "true"
 VERBOSE = os.getenv("VERBOSE", "true").lower() == "true"
 TEMPERATURE = float(os.getenv("TEMPERATURE", 0.7))
+
+# Get the react prompt from the hub
+react_prompt = hub.pull("hwchase17/react")
 
 if USE_ANTHROPIC:
     # Import Anthropic modules
@@ -28,7 +32,7 @@ if USE_ANTHROPIC:
         raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
     
     llm = ChatAnthropic(
-        model="claude-3-sonnet-20240229",
+        model="claude-3-5-sonnet-latest",
         temperature=TEMPERATURE,
         anthropic_api_key=anthropic_api_key
     )
@@ -44,7 +48,7 @@ else:
         raise ValueError("OPENAI_API_KEY not found in environment variables")
     
     llm = ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         temperature=TEMPERATURE,
         openai_api_key=openai_api_key
     )
@@ -102,16 +106,11 @@ if USE_ANTHROPIC:
     # Create the agent with the appropriate prompt
     from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an AI assistant that helps with information retrieval and calculations."),
-        ("user", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ])
-    
+    # Use the react prompt directly from the hub for Anthropic
     agent = create_react_agent(
         llm=llm,
         tools=tools,
-        prompt=prompt
+        prompt=react_prompt
     )
     
     agent_executor = AgentExecutor(
@@ -125,7 +124,7 @@ else:
     agent = create_react_agent(
         llm=llm,
         tools=tools,
-        verbose=VERBOSE
+        prompt=react_prompt
     )
     
     agent_executor = AgentExecutor(
