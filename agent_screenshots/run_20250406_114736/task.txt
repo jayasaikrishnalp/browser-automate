@@ -1,0 +1,5 @@
+Access the URL. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+Username: kk_labs_user_673801
+Password: wfqjqrCRy@G5
+
+Create python lambda function

@@ -1,0 +1,32 @@
+[
+  {
+    "step": 0,
+    "description": "Navigate to the AWS Management...",
+    "url": "about:blank",
+    "title": "",
+    "timestamp": "2025-04-06T13:24:04.677137",
+    "screenshot_path": "about_step_0.png",
+    "requested_filename": null,
+    "goal": "Navigate to the AWS Management Console login page"
+  },
+  {
+    "step": 1,
+    "description": "Amazon Web Services Sign",
+    "url": "https://signin.aws.amazon.com/oauth?client_id=arn%3Aaws%3Asignin%3A%3A%3Aconsole%2Fcanvas&code_challenge=t91hfIgiQPfsAQuCAHI-I1T8OyFJwHpxVWUgrqUMx_c&code_challenge_method=SHA-256&response_type=code&redirect_uri=https%3A%2F%2Fus-east-1.console.aws.amazon.com%2Fconsole%2Fhome%3FhashArgs%3D%2523%26isauthcode%3Dtrue%26region%3Dus-east-1%26state%3DhashArgsFromTB_us-east-1_52b6e305f73a1141",
+    "title": "Amazon Web Services Sign-In",
+    "timestamp": "2025-04-06T13:24:04.677156",
+    "screenshot_path": "signin.aws.amazon.com_Amazon_Web_Services__1.png",
+    "requested_filename": null,
+    "goal": "Input the username and password then sign in"
+  },
+  {
+    "step": 2,
+    "description": "Console Home",
+    "url": "https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#",
+    "title": "Console Home | Console Home | us-east-1",
+    "timestamp": "2025-04-06T13:24:04.677165",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Console_Home___Conso_2.png",
+    "requested_filename": null,
+    "goal": "Search for EC2 in the search bar"
+  }
+]

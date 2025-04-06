@@ -1,0 +1,459 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Access the URL. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+Username: kk_labs_user_673801
+Password: wfqjqrCRy@G5
+
+Create python lambda function""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input 058264522852 into index 3
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_673801 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input wfqjqrCRy@G5 into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#', title='Console Home | Console Home | us-east-1')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Console Home
+View resource insights, service shortcuts, and feature updates
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Console Home
+View resource insights, service shortcuts, and feature updates
+[Option+S]
+.
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Loading
+Account
+Account ID
+0582-6452-2852
+IAM user
+kk_labs_user_673801
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button Services;false/>
+[4]<input Search;search;combobox/>
+[5]<a CloudShell/>
+[6]<button false/>
+[7]<button Settings;false/>
+[8]<button combobox;false;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[9]<button false>kk_labs_user_673801 @ 0582-6452-2852/>
+[10]<div Console Home
+myApplications
+All services
+Console Home
+Recently visited
+No recently visited services
+Explore one of these commonly visited AWS services.
+Applications
+(0)
+Region: US East (N. Virginia)
+Select Region
+Select Region
+Welcome to AWS
+Getting started with AWS
+Learn the fundamentals and find valuable information to get the most out of AWS.
+Learn from AWS experts and advance your skills and knowledge.
+Discover new AWS services, features, and Regions.
+AWS Health
+Cost and usage
+Current month costs
+Forecasted month end costs
+Savings opportunities
+Cost breakdown
+Solutions
+(16)
+Info
+:
+Vetted Solutions from AWS for popular business and technical use cases.
+Explore AWS
+Info
+:
+Explore training for coding experts seeking to integrate the latest AI innovations into their workflows and toolbox
+Transform your business with the right LLM and price-performant, purpose-built infrastructure
+Discover 6 essential guidelines for building successful gen AI applications with Amazon Bedrock
+Discover three strategic benefits >
+Security
+Info
+:
+Region: US East (N. Virginia)
+No security data
+Assess security findings and improve your security posture with Security Hub.
+Trusted Advisor
+Latest announcements
+Recent AWS blog posts
+Console Home
+Console Home displays widgets with important information about your AWS
+      environment.
+Customize your Console Home
+      dashboard
+Add, remove, rearrange, and resize widgets to customize your Console Home dashboard.
+      Changes you make do not affect others if you're using a shared account.
+Add widgets
+by choosing the
++Add
+         widgets
+button and the
+drag indicator
+(six vertical
+      dots) on the widget title bar to drag it to your Console Home dashboard.
+Remove widgets
+by choosing the
+ellipsis
+(three vertical dots) at the top-right corner.
+Rearrange widgets
+by choosing the
+drag
+         indicator
+(six vertical dots) on the title bar and dragging it to a new
+      location.
+Resize widgets
+by choosing and dragging the
+resize icon
+at the bottom-right corner.
+For more information, see
+Working with widgets
+.
+Was this content helpful?
+Yes
+No
+Learn more
+Getting started with the AWS Management Console/>
+[11]<button false;Open side navigation/>
+[12]<button Open help panel;false/>
+[13]<button false;View Amazon Q panel/>
+[14]<a button>Info
+:/>
+[15]<button submit>Reset to default layout/>
+[16]<button submit>Add widgets/>
+[17]<button />
+[18]<a button>Info
+:/>
+[19]<button false;More actions for Recently visited/>
+[20]<a EC2/>
+[21]<a S3/>
+[22]<a Aurora and RDS/>
+[23]<a Lambda/>
+[24]<a View all services/>
+[25]<button />
+[26]<button />
+[27]<a button>Info
+:/>
+[28]<a Create application/>
+[29]<button false;More actions for Applications/>
+[30]<button false>us-east-1 (Current Region)/>
+[31]<input search;Find applications/>
+[32]<button Previous page/>
+[33]<button Page 1 of all pages>1/>
+[34]<button Next page/>
+[35]<div region;Applications>Displaying items 0 to 0 of 0
+Originating account
+You don't have permission to
+servicecatalog
+:
+ListApplications
+.  To request access, copy the following text and send it to your AWS administrator.
+Learn more about troubleshooting access denied errors.
+User:
+arn:aws:iam::058264522852:user/kk_labs_user_673801
+Action:
+servicecatalog:ListApplications
+On resource(s):
+arn:aws:servicecatalog:us-east-1:058264522852:/applications/*
+Context:
+a policy explicitly denies the action/>
+[36]<div button>Name/>
+[37]<button />
+[38]<div button>Description/>
+[39]<button />
+[40]<div button>Region/>
+[41]<button />
+[42]<div button/>
+[43]<button />
+[44]<div />
+[45]<span button;false>Access denied to servicecatalog:ListApplications/>
+[46]<div />
+[47]<button Diagnose with Amazon Q/>
+[48]<img />
+[49]<a Go to myApplications/>
+[50]<button />
+[51]<button />
+[52]<button More actions for Welcome to AWS;false/>
+[53]<a Training and certification/>
+[54]<a What's new with AWS?/>
+[55]<button />
+[56]<button />
+[57]<a button>Info
+:/>
+[58]<button More actions for AWS Health;false/>
+[59]<a Go to AWS Health/>
+[60]<button />
+[61]<button />
+[62]<a button>Info
+:/>
+[63]<button More actions for Cost and usage;false/>
+[64]<button Access denied/>
+[65]<button Access denied/>
+[66]<a Enable Cost Optimization Hub/>
+[67]<button Access denied/>
+[68]<a Go to Billing and Cost Management/>
+[69]<button />
+[70]<button Scroll left/>
+[71]<button tab>Artificial Intelligence (4)/>
+[72]<button tab>Security (4)/>
+[73]<button tab>Infrastructure (4)/>
+[74]<button tab>Databases (4)/>
+[75]<button Scroll right/>
+[76]<div tabpanel>Time to complete: 10 mins
+Time to complete: 15 mins
+Time to complete: 35 mins
+Time to complete: 3 mins/>
+[77]<a Launch generative AI applications with minimal coding/>
+[78]<a Detect and remediate coding errors/>
+[79]<a Deploy conversational AI-powered business applications/>
+[80]<a Build machine learning models from development to production/>
+[81]<a Go to AWS Solutions Library/>
+[82]<button />
+[83]<a Learn AI/>
+[84]<a Deploy LLMs with confidence/>
+[85]<a Gen AI on AWS/>
+[86]<a The road map to transform financial services with gen AI/>
+[87]<button />
+[88]<a Get started/>
+[89]<a Go to Security Hub/>
+[90]<button />
+[91]<button />
+[92]<a button>Info
+:/>
+[93]<button More actions for Trusted Advisor;false/>
+[94]<button />
+[95]<a button>Info
+:/>
+[96]<button More actions for Latest announcements;false/>
+[97]<button />
+[98]<a button>Info
+:/>
+[99]<button More actions for Recent AWS blog posts;false/>
+[100]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[101]<button Feedback/>
+[102]<ul />
+[103]<a Privacy/>
+[104]<a Terms/>
+[105]<button Cookie preferences/>
+... 1013 pixels below - scroll or extract content to see more ...
+Current step: 3/100Current date and time: 2025-04-06 11:48
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully logged into the AWS console with the provided credentials. I'm now at the AWS Console Home page.",
+    "memory": "I have accessed the AWS console using the provided credentials (Username: kk_labs_user_673801, Password: wfqjqrCRy@G5). I need to create a Python Lambda function. I can see the Lambda service is one of the recommended services on the home page. Currently at step 3/100.",
+    "next_goal": "Navigate to the Lambda service to create a Python Lambda function"
+  },
+  "action": [
+    {
+      "click_element": {
+        "index": 23
+      }
+    }
+  ]
+}

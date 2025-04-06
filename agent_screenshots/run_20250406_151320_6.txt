@@ -1,0 +1,278 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Go to youtube.com, Search for Model Context Protocol latest videos""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://www.youtube.com
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input Model Context Protocol latest videos into index 3
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 5:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔍  Scrolled down the page by one page
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://www.youtube.com/results?search_query=Model+Context+Protocol+latest+videos
+Available tabs:
+[TabInfo(page_id=0, url='https://www.youtube.com/results?search_query=Model+Context+Protocol+latest+videos', title='Model Context Protocol latest videos - YouTube')]
+Interactive elements from top layer of the current page inside the viewport:
+... 1375 pixels above - scroll or extract content to see more ...
+[0]<button Guide/>
+[1]<a YouTube Home/>
+IN
+[2]<div />
+[3]<input true;text;search_query;Search;combobox/>
+[4]<button Clear search query/>
+[5]<button Search/>
+[6]<button Search with your voice/>
+[7]<a />
+[8]<button Settings/>
+[9]<a Sign in/>
+[10]<ytd-mini-guide-entry-renderer tab;Home/>
+[11]<a Home>Home
+Home/>
+[12]<ytd-mini-guide-entry-renderer tab;Shorts/>
+[13]<a Shorts>Shorts
+Shorts/>
+[14]<ytd-mini-guide-entry-renderer tab;Subscriptions/>
+[15]<a Subscriptions>Subscriptions
+Subscriptions/>
+[16]<ytd-mini-guide-entry-renderer tab;You/>
+[17]<a You>You
+You/>
+[18]<ytd-mini-guide-entry-renderer tab;History/>
+[19]<a History>History
+History/>
+[20]<a 9:17
+9:17
+Now playing/>
+[21]<img />
+6
+chapters
+[22]<div button>What is MCP? | Usecase - SEO | Usecase - RAG | Usecase - Apps | Conclusion | The future?/>
+[23]<button More/>
+Model Context Protocol Hosts
+Free Model Context Protocol - MCPVerse eliminates the hassle of local installation, configuration, or setup.
+Sponsored
+https://www.mcpverse.dev/
+[24]<button />
+[25]<a 8:08
+8:08
+Now playing/>
+[26]<img />
+[27]<a I gave Claude root access to my server... Model Context Protocol explained by Fireship 807,701 views 5 days ago 8 minutes, 8 seconds>I gave Claude root access to my server... Model Context Protocol explained/>
+[28]<button Action menu/>
+807K views
+5 days ago
+Fireship
+#programming #ai #thecodereport Chat with Me on Discord https://discord.gg/fireship Resources
+Model Context Protocol
+...
+New
+4K
+[29]<a 12:24
+12:24
+Now playing/>
+[30]<img />
+[31]<a What is MCP? Model Context Protocol Clearly Explained [No BS] by Cloud Champ 1,286 views 20 hours ago 12 minutes, 24 seconds>What is MCP? Model Context Protocol Clearly Explained [No BS]/>
+[32]<button Action menu/>
+1.2K views
+20 hours ago
+[33]<a Go to channel/>
+[34]<a Cloud Champ/>
+What is MCP (
+Model Context Protocol
+) - In this
+video
+I simply explain MCP
+protocol
+with Example and demos showing How mcp ...
+New
+4K
+10
+chapters
+[35]<div button>Don't sleep on this AI trend | Understanding the Problem MCP solves | What is MCP Protocol | How to add MCP servers to your LLMs | Github MCP Server | {Demo} Creating a repository using VS code + Github MCP server | USB‑C for AI applications | Understanding MCP architecture | MCP Server Components | {Demo} Manage Kubernetes with Kubernetes MCP server/>
+[36]<button More/>
+[37]<a />
+[38]<a Luxury 4 BHK in Kokapet/>
+[39]<a />
+[40]<a Manhattan-inspired Indulgences, Now @Kokapet. Book Luxury 4 BHK Residences by Godréj./>
+Sponsored
+Godréj Hyderabad
+[41]<button My Ad Centre/>
+[42]<a 15:04
+15:04
+Now playing/>
+[43]<img />
+[44]<a Model Context Protocol Clearly Explained | MCP Beyond the Hype by codebasics 59,639 views 2 weeks ago 15 minutes>Model Context Protocol Clearly Explained | MCP Beyond the Hype/>
+[45]<button Action menu/>
+59K views
+2 weeks ago
+[46]<a Go to channel/>
+[47]<a codebasics/>
+This
+video
+contains a very simple explanation of MCP, also known as
+Model Context Protocol
+. We will first understand what ...
+[48]<a 1:20:21
+1:20:21
+Now playing/>
+[49]<img />
+[50]<a The Creators of Model Context Protocol by Latent Space 2,422 views 2 days ago 1 hour, 20 minutes>The Creators of Model Context Protocol/>
+2.4K views
+2 days ago
+[51]<a Go to channel/>
+[52]<a Latent Space/>
+First, today's guests, Justin Spahr-Summers and David Soria Parra, are the co-creators of the
+Model Context Protocol
+, who were ...
+New
+[53]<a 12:34
+12:34
+Now playing/>
+[54]<a MCP - Model Context Protocol Explained | Telugu | Vamsi Bhavani by Vamsi Bhavani 18,388 views 4 days ago 12 minutes, 34 seconds>MCP - Model Context Protocol Explained | Telugu | Vamsi Bhavani/>
+[55]<button Action menu/>
+18K views
+4 days ago
+[56]<a Go to channel/>
+[57]<a Vamsi Bhavani/>
+mcp server
+model context protocol
+claude
+model context protocol
+(mcp)
+model context protocol
+tutorial Agenda - 1. What is mcp?
+New
+... 7178 pixels below - scroll or extract content to see more ...
+Current step: 5/100Current date and time: 2025-04-06 15:14
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully scrolled down and can now see the search results for 'Model Context Protocol latest videos'. The page shows multiple videos related to Model Context Protocol with their thumbnails, titles, view counts, and upload dates.",
+    "memory": "I have navigated to youtube.com, searched for 'Model Context Protocol latest videos', and scrolled down to see the search results. I can see several videos about Model Context Protocol including ones from Fireship, Cloud Champ, codebasics, Latent Space, and Vamsi Bhavani. The search results show recent videos about Model Context Protocol as requested. I am currently at step 5/100.",
+    "next_goal": "Complete the task as I have successfully searched for Model Context Protocol latest videos on YouTube"
+  },
+  "action": [
+    {
+      "done": {
+        "text": "I have successfully completed the task of going to YouTube and searching for 'Model Context Protocol latest videos'. The search results show several recent videos about Model Context Protocol from various creators including:\n\n1. 'What is MCP? Model Context Protocol Clearly Explained [No BS]' by Cloud Champ (20 hours ago)\n2. 'I gave Claude root access to my server... Model Context Protocol explained' by Fireship (5 days ago)\n3. 'The Creators of Model Context Protocol' by Latent Space (2 days ago)\n4. 'MCP - Model Context Protocol Explained | Telugu | Vamsi Bhavani' (4 days ago)\n5. 'Model Context Protocol Clearly Explained | MCP Beyond the Hype' by codebasics (2 weeks ago)\n\nThese videos appear to be the latest content about Model Context Protocol on YouTube as requested.",
+        "success": true
+      }
+    }
+  ]
+}

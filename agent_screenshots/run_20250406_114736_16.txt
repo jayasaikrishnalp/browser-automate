@@ -1,0 +1,698 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Access the URL. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+Username: kk_labs_user_673801
+Password: wfqjqrCRy@G5
+
+Create python lambda function""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input 058264522852 into index 3
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_673801 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input wfqjqrCRy@G5 into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 16: Run
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 15: Create a function
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input MyPythonFunction into index 23
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 25: Node.js 22.x
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 44:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 37: Create function
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 37: Create function
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 📄  Extracted from page
+: ```json
+{
+  "code": "import json\n\ndef lambda_handler(event, context):\n    # TODO implement\n    return {\n        'statusCode': 200,\n        'body': json.dumps('Hello from Lambda!')\n    }"
+}
+```
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 77: Test (Ctrl+Shift+I)
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 107: Create new test event
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/MyPythonFunction?newFunction=true&tab=code
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/functions/MyPythonFunction?newFunction=true&tab=code', title='MyPythonFunction | Functions | Lambda')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Service menu
+You can access all AWS services here. There are sections for recently visited and you can save your favorite services too.
+Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Lambda
+Run code without thinking about servers
+Console Home
+View resource insights, service shortcuts, and feature updates
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Lambda
+Run code without thinking about servers
+Console Home
+View resource insights, service shortcuts, and feature updates
+[Option+S]
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Regions
+Current Region
+N. Virginia
+us-east-1
+United States
+N. Virginia
+us-east-1
+Ohio
+us-east-2
+N. California
+us-west-1
+Oregon
+us-west-2
+Asia Pacific
+Mumbai
+ap-south-1
+Osaka
+ap-northeast-3
+Seoul
+ap-northeast-2
+Singapore
+ap-southeast-1
+Sydney
+ap-southeast-2
+Tokyo
+ap-northeast-1
+Canada
+Central
+ca-central-1
+Europe
+Frankfurt
+eu-central-1
+Ireland
+eu-west-1
+London
+eu-west-2
+Paris
+eu-west-3
+Stockholm
+eu-north-1
+South America
+São Paulo
+sa-east-1
+There are 15 Regions that are not enabled for this account
+Manage Regions
+|
+Manage Local Zones
+Account
+Account ID
+0582-6452-2852
+IAM user
+kk_labs_user_673801
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button Services;false/>
+[4]<button submit>Next/>
+[5]<input Search;search;combobox/>
+[6]<a CloudShell/>
+[7]<button Notifications (none available)/>
+[8]<button false/>
+[9]<button Settings;false/>
+[10]<button combobox;false;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[11]<button false>kk_labs_user_673801 @ 0582-6452-2852/>
+[12]<div Lambda
+...
+Functions
+MyPythonFunction
+Lambda
+Dashboard
+Applications
+Functions
+MyPythonFunction
+Additional resources
+Code signing configurations
+Event source mappings
+Layers
+Replicas
+Related AWS resources
+Step Functions state machines
+Successfully created the function
+MyPythonFunction
+. You can now change its code and configuration. To invoke your function with a test event, choose "Test".
+MyPythonFunction
+template-diagram control
+Diagram
+Description
+-
+Last modified
+Function ARN
+arn:aws:lambda:us-east-1:058264522852:function:MyPythonFunction
+Function URL
+-
+Code properties
+Package size
+299 byte
+SHA256 hash
+HAPq9EReJVEC5gLavtc/gyd5vZtd9eiUGF932t0jBxY=
+Last modified
+To edit customer managed key encryption, you must upload a new .zip deployment package.
+Learn more
+AWS KMS key ARN
+-
+Key alias
+-
+Status
+-
+Info
+Tutorials
+Learn how to implement common use cases in AWS Lambda.
+Create a simple web app
+In this tutorial you will learn how to:
+Build a simple web app, consisting of a Lambda function with a function URL that outputs a webpage
+Invoke your function through its function URL
+Learn more
+Start tutorial/>
+[13]<button false;Open side navigation/>
+[14]<button Open help panel;false/>
+[15]<button false;View Amazon Q panel/>
+[16]<button Close/>
+[17]<button submit>Throttle/>
+[18]<span />
+[19]<button Copy ARN/>
+[20]<button false>Actions/>
+[21]<span true;button>Function overview/>
+[22]<a button;Info for lambda configuration (shows in sidebar).>Info
+:/>
+[23]<button submit>Export to Infrastructure Composer/>
+[24]<button false>Download/>
+[25]<button Diagram/>
+[26]<button Template/>
+[27]<div link>MyPythonFunction/>
+[28]<img />
+[29]<div link>Layers
+(0)/>
+[30]<a Add trigger/>
+[31]<button submit>Add destination/>
+[32]<button 51 seconds ago/>
+[33]<span />
+[34]<button Copy ARN/>
+[35]<a Info for general urls (shows in sidebar).;button>Info
+:/>
+[36]<a tab>Code/>
+[37]<a tab>Test/>
+[38]<a tab>Monitor/>
+[39]<a tab>Configuration/>
+[40]<a tab>Aliases/>
+[41]<a tab>Versions/>
+[42]<div tabpanel/>
+[43]<div Code source
+Create new test event - MyPythonFunction - Lambda code editor based on Code-OSS
+Drag a view here to display.
+Show All Commands
+Ctrl
++
+Shift
++
+P
+Go to File
+Ctrl
++
+P
+Find in Files
+Ctrl
++
+Shift
++
+F
+Toggle Full Screen
+F11
+Show Settings
+Ctrl
++
+,
+1
+2
+3
+4
+5
+6
+7
+8
+9
+import
+json
+def
+lambda_handler
+(
+event
+,
+context
+)
+:
+#
+TODO
+implement
+return
+{
+'statusCode'
+:
+200
+,
+'body'
+: json.dumps
+(
+'Hello from Lambda!'
+)
+}
+Press desired key combination and then press ENTER.
+Show All Commands
+Ctrl
++
+Shift
++
+P
+Go to File
+Ctrl
++
+P
+Find in Files
+Ctrl
++
+Shift
++
+F
+Toggle Full Screen
+F11
+Show Settings
+Ctrl
++
+,
+Drag a view here to display.
+Drag a view here to display.
+Select test event
+1 Results
+0 Selected
+Press 'Enter' to confirm your input or 'Escape' to cancel
+OK
+Create new test event
+Create new test event
+Upload a file from Amazon S3
+When you upload a new .zip file package, it overwrites the existing code.
+Enable encryption with an AWS KMS customer managed key
+By default, Lambda encrypts the .zip file archive using an AWS owned key.
+Cancel
+Save/>
+[44]<a Info for functions codeeditor (shows in sidebar).;button>Info
+:/>
+[45]<button false>Upload from/>
+[46]<button More;false/>
+[49]<li presentation>MyPythonFunction/>
+[55]<div Application Menu;menuitem/>
+[56]<li Explorer (Ctrl+Shift+E);tab;true/>
+[58]<li tab;false/>
+[60]<li tab;false/>
+[62]<li tab;false/>
+[64]<li tab;Custom Extension;false/>
+[66]<li button;Manage/>
+[68]<h2 Explorer/>
+[70]<div Explorer Section: MyPythonFunction;true;button>MyPythonFunction/>
+[71]<div tree;Files Explorer/>
+[72]<div treeitem;lambda_function.py/>
+[73]<a lambda_function.py/>
+[74]<div true;button;Deploy Section>Deploy/>
+[75]<div />
+[76]<a button>Deploy (Ctrl+Shift+U)/>
+[77]<a button>Test (Ctrl+Shift+I)/>
+[78]<div Test Events Section;true;button>Test Events [None Selected]/>
+[79]<div Test Events;tree/>
+[80]<div Create new test event ;treeitem/>
+[81]<a Create new test event/>
+[82]<div false;button;Environment Variables Section>Environment Variables/>
+[83]<div tablist/>
+[84]<div lambda_function.py, preview;tab/>
+[85]<a lambda_function.py/>
+[88]<div list/>
+[89]<a lambda_function.py/>
+[90]<canvas />
+[91]<textarea lambda_function.py, preview, Editor Group 1;textbox/>
+[92]<canvas />
+[93]<canvas />
+[94]<div tablist/>
+[95]<div tab;Create new test event, Editor Group 2/>
+[96]<a Create new test event/>
+[100]<footer status/>
+[101]<a No Problems;button>0
+0/>
+[102]<a debug-start  Amazon Q;button>Amazon Q/>
+[103]<a button;Notifications/>
+[104]<a button>Layout: US/>
+[105]<a button;terminal  Lambda, Open Lambda Commands>Lambda/>
+[106]<div tooltip>\MyPythonFunction\lambda_function.py/>
+[107]<div Create new test event
+Template - optional
+Event JSON
+1
+2
+3
+4
+5
+{
+"key1"
+:
+"value1"
+,
+"key2"
+:
+"value2"
+,
+"key3"
+:
+"value3"
+}/>
+[108]<vscode-button />
+[109]<button Invoke/>
+[110]<vscode-button />
+[111]<button Save;submit/>
+[112]<input Event NameMaximum of 25 characters consisting of letters, numbers, dots, hyphens and underscores.;MyEventName;text/>
+[113]<vscode-dropdown Template - optional;templateEventId;false;combobox>Hello World/>
+[114]<canvas />
+[115]<textarea textbox;Event JSON;Press Alt+F1 for Accessibility Options./>
+[116]<a button;Info for functions codeproperties (shows in sidebar).>Info
+:/>
+[117]<span />
+[118]<button />
+[119]<button 51 seconds ago/>
+[120]<div />
+[121]<span button;false>Encryption with AWS KMS customer managed KMS key/>
+[122]<div />
+[123]<a Info for configuration zip encrypt (shows in sidebar).;button>Info
+:/>
+[124]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[125]<div />
+[126]<button Open CloudShell>CloudShell/>
+[127]<button Feedback/>
+[128]<ul />
+[129]<a Privacy/>
+[130]<a Terms/>
+[131]<button Cookie preferences/>
+... 911 pixels below - scroll or extract content to see more ...
+Current step: 15/100Current date and time: 2025-04-06 11:50
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I clicked on 'Create new test event' and I'm now on the test event creation page where I can configure a test event for the Lambda function",
+    "memory": "I have accessed the AWS console using the provided credentials (Username: kk_labs_user_673801, Password: wfqjqrCRy@G5). I successfully created a Python Lambda function named 'MyPythonFunction' with Python 3.13 as the runtime. I can see the default Python Lambda function code in the code editor:\n\nimport json\n\ndef lambda_handler(event, context):\n    # TODO implement\n    return {\n        'statusCode': 200,\n        'body': json.dumps('Hello from Lambda!')\n    }\n\nI'm now creating a test event to test the Lambda function. I need to provide an event name and configure the test event JSON. Currently at step 15/100.",
+    "next_goal": "Configure the test event by entering a name and saving it"
+  },
+  "action": [
+    {
+      "input_text": {
+        "index": 112,
+        "text": "MyTestEvent"
+      }
+    },
+    {
+      "click_element": {
+        "index": 111
+      }
+    }
+  ]
+}

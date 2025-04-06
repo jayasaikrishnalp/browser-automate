@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Agent Task Runner</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Additional Modern UI Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Shadcn UI needs these styles -->
+    <style>
+        :root {
+            --background: 220 20% 97%;
+            --foreground: 222 47% 11%;
+            --card: 0 0% 100%;
+            --card-foreground: 222 47% 11%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222 47% 11%;
+            --primary: 221 83% 53%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222 47% 11%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215 16% 47%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222 47% 11%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214 32% 91%;
+            --input: 214 32% 91%;
+            --ring: 221 83% 53%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222 47% 11%;
+            --foreground: 210 40% 98%;
+            --card: 222 47% 11%;
+            --card-foreground: 210 40% 98%;
+            --popover: 222 47% 11%;
+            --popover-foreground: 210 40% 98%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 222 47% 11%;
+            --secondary: 217 32% 17%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217 32% 17%;
+            --muted-foreground: 215 20% 65%;
+            --accent: 217 32% 17%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62% 30%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217 32% 17%;
+            --input: 217 32% 17%;
+            --ring: 224 76% 48%;
+        }
+        
+        * {
+            border-color: hsl(var(--border));
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            min-height: 100vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Two-column layout setup */
+        .main-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .left-panel {
+            width: 45%;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: hsl(var(--card));
+            border-right: 1px solid hsl(var(--border));
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .right-panel {
+            width: 55%;
+            height: 100vh;
+            overflow-y: auto;
+            background-color: hsl(var(--background));
+            padding: 1.5rem;
+        }
+        
+        /* Enhanced button styling */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: hsl(221 83% 45%);
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            padding: 0.5rem 1.25rem;
+            background-color: hsl(var(--destructive));
+            color: hsl(var(--destructive-foreground));
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-danger:hover {
+            background-color: hsl(0 84% 50%);
+            transform: translateY(-1px);
+        }
+        
+        /* Spinner Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid hsl(var(--primary));
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        /* Logs styling */
+        .logs {
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+            border-radius: 0.5rem;
+            height: calc(100vh - 12rem);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* Log styling */
+        .log-info { color: #f0f0f0; }
+        .log-warning { color: #ffcc00; }
+        .log-error { color: #ff6b6b; }
+        .log-success { color: #4CAF50; }
+        .log-command { color: #64b5f6; }
+        .log-step { color: #ba68c8; }
+        
+        /* Step screenshots styling */
+        .step-screenshots {
+            overflow-y: auto;
+            background-color: hsl(var(--card));
+            padding: 15px;
+            border-radius: 0.5rem;
+            height: calc(100vh - 12rem);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .step-container {
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            margin-bottom: 15px;
+            background-color: hsl(var(--card));
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .step-header {
+            background-color: hsl(var(--secondary));
+            padding: 12px 16px;
+            font-weight: 500;
+            border-bottom: 1px solid hsl(var(--border));
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .step-content {
+            padding: 16px;
+            display: block;
+        }
+        
+        .step-content.active {
+            display: block;
+        }
+        
+        .step-screenshot {
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .step-screenshot:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Markdown viewer styles */
+        .markdown-viewer {
+            background-color: hsl(var(--card));
+            padding: 20px;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.5rem;
+            overflow: auto;
+            line-height: 1.6;
+            height: calc(100vh - 12rem);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .markdown-viewer h1 {
+            border-bottom: 1px solid hsl(var(--border));
+            padding-bottom: 0.3em;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .markdown-viewer h2 {
+            border-bottom: 1px solid hsl(var(--border));
+            padding-bottom: 0.3em;
+            margin-top: 24px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .markdown-viewer h3 {
+            margin-top: 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .markdown-viewer img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid hsl(var(--border));
+            border-radius: 0.25rem;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Tabs styling */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tab-button {
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            transition: all 0.2s ease;
+        }
+        
+        .tab-button:hover {
+            background-color: hsl(var(--primary/10));
+        }
+        
+        .tab-button.active {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Switch component */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: hsl(var(--muted));
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: hsl(var(--card));
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .switch-slider {
+            background-color: hsl(var(--primary));
+        }
+        
+        input:focus + .switch-slider {
+            box-shadow: 0 0 1px hsl(var(--primary));
+        }
+        
+        input:checked + .switch-slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+    <div class="main-container">
+        <!-- Left Panel: Task Input and Configuration -->
+        <div class="left-panel">
+            <header class="mb-4">
+                <h1 class="text-2xl font-bold tracking-tight flex items-center">
+                    <i class="fas fa-robot mr-2 text-primary"></i>
+                    Browser Agent Task Runner
+                </h1>
+                <p class="text-muted-foreground mt-2">Submit a task with screenshot directives to execute and view the results.</p>
+            </header>
+
+            <section class="bg-card rounded-lg border shadow-sm p-5 mb-5">
+                <h2 class="text-xl font-semibold mb-3 flex items-center">
+                    <i class="fas fa-tasks mr-2 text-primary"></i>
+                    Create Task
+                </h2>
+                <p class="mb-1">Use <code class="bg-muted px-1 py-0.5 rounded text-sm">&#91;SCREENSHOT&#93;</code> to indicate where screenshots should be taken.</p>
+                <p class="text-sm text-muted-foreground mb-4">For specific naming: <code class="bg-muted px-1 py-0.5 rounded text-sm">&#91;SCREENSHOT: Description - filename.png&#93;</code></p>
+                
+                <div class="mb-4">
+                    <label for="taskInput" class="block text-sm font-medium mb-1">Task Description:</label>
+                    <textarea id="taskInput" rows="8" class="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground" placeholder="Enter your task here, use [SCREENSHOT] to indicate where screenshots should be taken..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div class="bg-secondary/40 p-3 rounded-md">
+                        <h3 class="text-sm font-semibold mb-2 flex items-center">
+                            <i class="fas fa-cog mr-2"></i> Browser Options
+                        </h3>
+                        <div class="flex items-center mb-3">
+                            <label for="highlightToggle" class="mr-2 text-sm font-medium">Highlight Elements:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="highlightToggle" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <label for="headlessToggle" class="mr-2 text-sm font-medium">Headless Mode:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="headlessToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                            <span class="inline-flex items-center justify-center rounded-full bg-primary/10 px-1.5 py-0.5 text-xs text-primary cursor-help ml-2" title="Headless mode runs the browser invisibly in the background.">?</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-secondary/40 p-3 rounded-md">
+                        <h3 class="text-sm font-semibold mb-2 flex items-center">
+                            <i class="fas fa-chrome mr-2"></i> Chrome Settings
+                        </h3>
+                        <div class="flex items-center mb-3">
+                            <label for="localBrowserToggle" class="mr-2 text-sm font-medium">Use Local Browser:</label>
+                            <label class="switch">
+                                <input type="checkbox" id="localBrowserToggle">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div id="chromePath" class="mb-2">
+                            <label for="chromePathInput" class="block text-sm font-medium mb-1">Custom Chrome Path:</label>
+                            <input type="text" id="chromePathInput" class="w-full p-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary placeholder:text-muted-foreground" placeholder="e.g., /Applications/Google Chrome.app/Contents/MacOS/Google Chrome">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button id="submitButton" onclick="submitTask()" class="btn-primary text-base h-12 px-6 py-3 font-semibold shadow-lg">
+                        <i class="fas fa-play-circle mr-2"></i> Run Task
+                    </button>
+                    <div id="loadingSpinner" class="hidden items-center">
+                        <div class="spinner"></div>
+                        <span>Running...</span>
+                    </div>
+                    <button onclick="loadExampleTask()" class="text-sm text-primary hover:underline flex items-center">
+                        <i class="fas fa-lightbulb mr-1"></i> Load Example
+                    </button>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Right Panel: Output (Logs, Screenshots, Downloads) -->
+        <div class="right-panel">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-eye mr-2 text-primary"></i>
+                    Results <span class="ml-3 text-base font-normal">Status: <span id="status" class="font-normal">Idle</span></span>
+                </h2>
+                <div class="flex items-center">
+                    <div class="flex space-x-2 mr-4">
+                        <button onclick="switchTab('logs')" class="tab-button text-sm font-medium py-2 px-4 rounded-md hover:bg-primary/10 transition-colors active">Logs</button>
+                        <button onclick="switchTab('screenshots')" class="tab-button text-sm font-medium py-2 px-4 rounded-md hover:bg-primary/10 transition-colors">Step Screenshots</button>
+                        <button onclick="switchTab('downloads')" class="tab-button text-sm font-medium py-2 px-4 rounded-md hover:bg-primary/10 transition-colors">Downloads</button>
+                    </div>
+                    <button id="stopTaskBtn" onclick="stopTask()" class="btn-danger text-sm px-3 py-1 font-semibold shadow-sm flex items-center" style="display: none;">
+                        <i class="fas fa-stop-circle mr-1"></i> Stop
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-card rounded-lg border shadow-sm overflow-hidden">
+                <!-- Logs Tab Content -->
+                <div id="logsTab" class="tab-content active">
+                    <div class="p-4 border-b text-sm font-medium">Execution Logs</div>
+                    <div id="logs" class="p-4 text-sm font-mono whitespace-pre-wrap overflow-y-auto max-h-[calc(100vh-150px)] bg-black text-white">
+                        <!-- Logs will be streamed here -->
+                        <p class="text-gray-400">Waiting for task to start...</p>
+                    </div>
+                </div>
+
+                <!-- Screenshots Tab Content -->
+                <div id="screenshotsTab" class="tab-content">
+                    <div class="p-4 border-b text-sm font-medium">Step Screenshots</div>
+                    <div id="screenshots" class="p-4 overflow-y-auto max-h-[calc(100vh-150px)] bg-gray-100">
+                        <!-- Screenshots will be loaded here -->
+                        <p class="text-gray-600">Screenshots will appear here after the task completes.</p>
+                    </div>
+                </div>
+
+                <!-- Downloads Tab Content -->
+                <div id="downloadsTab" class="tab-content">
+                    <div class="p-4 border-b text-sm font-medium">Downloads</div>
+                    <div class="p-4 space-y-4">
+                        <button onclick="downloadLogs()" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" id="downloadLogsBtn">
+                            <i class="fas fa-file-alt mr-2"></i> Download Logs (.txt)
+                        </button>
+                        <button onclick="downloadScreenshots()" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50" id="downloadScreenshotsBtn">
+                            <i class="fas fa-images mr-2"></i> Download Screenshots (.zip)
+                        </button>
+                        <button onclick="downloadGif()" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50" id="downloadGifBtn">
+                            <i class="fas fa-film mr-2"></i> Download GIF
+                        </button>
+                        <button onclick="downloadMp4()" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50" id="downloadMp4Btn">
+                            <i class="fas fa-video mr-2"></i> Download MP4
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let screenshotDir = "";
+        let checkInterval;
+        
+        // On page load - show the local browser checkbox and show/hide related fields
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('localBrowserToggle').addEventListener('change', function() {
+                if (this.checked) {
+                    document.getElementById('chromePath').style.display = 'block';
+                    document.getElementById('debugInstructions').style.display = 'block';
+                } else {
+                    document.getElementById('chromePath').style.display = 'none';
+                    document.getElementById('debugInstructions').style.display = 'none';
+                }
+            });
+            
+            // Initially hide stop button
+            document.getElementById('stopTaskBtn').style.display = 'none';
+            // Initially hide download options
+            document.getElementById('downloadOptions').style.display = 'none';
+        });
+
+        function loadExampleTask() {
+            const exampleTask = `Navigate to Google.com
+[SCREENSHOT: Google Homepage - google_home.png]
+
+Search for "browser automation using AI"
+[SCREENSHOT: Search Results - search_results.png]
+
+Click on one of the relevant results about AI and browser automation
+[SCREENSHOT: Article Page - article.png]
+
+Scroll down to read more about the topic
+[SCREENSHOT: More Content - more_content.png]`;
+            
+            document.getElementById('taskInput').value = exampleTask;
+        }
+
+        function submitTask() {
+            // Get the task details
+            const task = document.getElementById('taskInput').value;
+            
+            // Validate the task
+            if (!task || task.trim().length === 0) {
+                alert("Please enter a task description.");
+                return;
+            }
+            
+            // Get the configuration options
+            const highlightElements = document.getElementById('highlightToggle').checked;
+            const headlessMode = document.getElementById('headlessToggle').checked;
+            const useLocalBrowser = document.getElementById('localBrowserToggle').checked;
+            const chromePath = document.getElementById('chromePathInput').value;
+            
+            // Update UI for task running
+            document.getElementById('submitButton').disabled = true;
+            document.getElementById('loadingSpinner').classList.remove("hidden");
+            document.getElementById('loadingSpinner').classList.add("flex");
+            document.getElementById('status').innerText = "Starting...";
+            
+            // Clear previous logs and screenshots
+            document.getElementById('logs').innerHTML = "Starting task execution...";
+            document.getElementById('screenshots').innerHTML = "Screenshots will appear here as they are captured...";
+            
+            // Show stop button
+            document.getElementById('stopTaskBtn').style.display = "inline-flex";
+            
+            // Create a FormData object to send
+            const formData = new FormData();
+            formData.append('task', task);
+            formData.append('highlight_elements', highlightElements);
+            formData.append('headless_mode', headlessMode);
+            formData.append('use_local_browser', useLocalBrowser);
+            if (chromePath && chromePath.trim().length > 0) {
+                formData.append('chrome_path', chromePath);
+            }
+            
+            // Submit the task to the server
+            fetch('/run-task', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Update the UI with the task status
+                document.getElementById('status').innerText = "Running";
+                screenshotDir = data.screenshot_dir;
+                
+                // Start streaming logs
+                startLogStream();
+                
+                // Start checking for results
+                checkInterval = setInterval(checkResults, 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Error: " + error.message);
+                
+                // Reset UI
+                document.getElementById('submitButton').disabled = false;
+                document.getElementById('loadingSpinner').classList.add("hidden");
+                document.getElementById('loadingSpinner').classList.remove("flex");
+                document.getElementById('status').innerText = "Error";
+                document.getElementById('stopTaskBtn').style.display = "none";
+            });
+        }
+
+        function checkResults() {
+            if (!screenshotDir) return;
+            
+            // Get the directory name
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            fetch(`/get-results/${dirName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "completed") {
+                    // Task is complete, update UI
+                    document.getElementById('status').innerText = "Completed";
+                    document.getElementById('submitButton').disabled = false;
+                    document.getElementById('loadingSpinner').classList.add("hidden");
+                    document.getElementById('loadingSpinner').classList.remove("flex");
+                    document.getElementById('stopTaskBtn').style.display = "none";
+                    
+                    // Clear the check interval
+                    clearInterval(checkInterval);
+                    
+                    // Load the screenshots
+                    loadStepScreenshots();
+                    
+                    // Don't automatically switch to downloads tab
+                    // switchTab('downloads');
+                    
+                    // Check if GIF is available
+                    checkForGif();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking results:', error);
+            });
+        }
+
+        function renderMarkdown(markdown, dirName) {
+            // Markdown rendering is now handled in the downloads tab
+            // No need to update a specific element
+            
+            // Simple client-side renderer (basic)
+            let html = markdown
+                .replace(/^# (.*)$/gm, '<h1>$1</h1>')
+                .replace(/^## (.*)$/gm, '<h2>$1</h2>')
+                .replace(/^### (.*)$/gm, '<h3>$1</h3>')
+                .replace(/^#### (.*)$/gm, '<h4>$1</h4>')
+                .replace(/^\* (.*)$/gm, '<li>$1</li>')
+                .replace(/^\d+\. (.*)$/gm, '<li>$1</li>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+            
+            // Handle image references to use absolute paths
+            html = html.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
+                // If the image path is relative, make it absolute
+                if (!src.startsWith('http') && !src.startsWith('/')) {
+                    return `<img src="/get-image/${dirName}/${src}" alt="${alt}" class="my-2 rounded-md border shadow-sm">` +
+                        `<p class="text-xs text-muted-foreground mt-1 mb-3">${alt}</p>`;
+                }
+                return `<img src="${src}" alt="${alt}" class="my-2 rounded-md border shadow-sm">` +
+                    `<p class="text-xs text-muted-foreground mt-1 mb-3">${alt}</p>`;
+            });
+            
+            // Convert paragraphs (text blocks separated by blank lines)
+            html = html.split(/\n\s*\n/).map(p => {
+                if (!p.trim()) return '';
+                if (p.startsWith('<h') || p.startsWith('<li>') || p.startsWith('<img')) {
+                    return p;
+                }
+                return `<p>${p}</p>`;
+            }).join('');
+            
+            // Replace line breaks with <br> in paragraphs
+            html = html.replace(/<p>(.*?)<\/p>/gs, (match, content) => {
+                return `<p>${content.replace(/\n/g, '<br>')}</p>`;
+            });
+            
+            // Wrap bullet points in <ul>
+            html = html.replace(/(<li>.*?<\/li>)(?=\s*<li>|$)/gs, (match) => {
+                const items = match.match(/<li>.*?<\/li>/g) || [];
+                return `<ul class="list-disc pl-5 space-y-1 mb-4">${items.join('')}</ul>`;
+            });
+            
+            // Insert the HTML
+            document.getElementById('reportContent').innerHTML = html;
+            
+            // Switch to the report tab
+            switchTab('report');
+        }
+
+        function startLogStream() {
+            if (!screenshotDir) return;
+            
+            // Get the directory name
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            // Clear previous log content
+            document.getElementById('logs').innerHTML = '';
+            
+            // Set up event source for streaming logs
+            const eventSource = new EventSource(`/stream-logs/${dirName}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.log) {
+                    // Append log line
+                    appendFormattedLogs(data.log);
+                    
+                    // Auto-scroll to bottom
+                    const logsElement = document.getElementById('logs');
+                    logsElement.scrollTop = logsElement.scrollHeight;
+                }
+                
+                if (data.status === 'completed') {
+                    // Close the event stream
+                    eventSource.close();
+                }
+                
+                if (data.error) {
+                    console.error('Log stream error:', data.error);
+                    eventSource.close();
+                }
+            };
+            
+            eventSource.onerror = function() {
+                console.error('EventSource failed, closing connection');
+                eventSource.close();
+            };
+        }
+
+        function appendFormattedLogs(logText) {
+            const logsElement = document.getElementById('logs');
+            
+            // Split the text into lines
+            const lines = logText.split('\n');
+            
+            lines.forEach(line => {
+                if (!line.trim()) return;  // Skip empty lines
+                
+                // Create a new log entry
+                const logEntry = document.createElement('div');
+                logEntry.className = 'mb-1 py-1'; // Base styling for all logs
+                
+                // Apply different styles based on log content
+                if (line.includes('ERROR') || line.includes('Error:')) {
+                    logEntry.classList.add('text-red-500', 'font-semibold');
+                } else if (line.includes('WARNING') || line.includes('Warning:')) {
+                    logEntry.classList.add('text-yellow-500', 'font-semibold');
+                } else if (line.includes('SUCCESS') || line.includes('✅') || line.includes('Task completed')) {
+                    logEntry.classList.add('text-green-500', 'font-semibold');
+                } else if (line.includes('Running command') || line.includes('$')) {
+                    logEntry.classList.add('text-purple-400', 'font-mono');
+                } else if (line.includes('Step ') || line.includes('📍') || line.includes('Goal:')) {
+                    logEntry.classList.add('text-blue-400', 'font-semibold');
+                } else {
+                    logEntry.classList.add('text-gray-200'); // Light gray for regular logs
+                }
+                
+                // Highlight important keywords
+                line = line
+                    .replace(/\b(ERROR|WARNING|SUCCESS|STEP|\$\s+|✅|❌|📍|🎯|🛠️|👍)\b/g, match => `<span class="font-semibold">${match}</span>`)
+                    .replace(/('[^']*'|"[^"]*")/g, match => `<span class="text-blue-300">${match}</span>`); // Highlight string literals
+                
+                logEntry.innerHTML = line;
+                logsElement.appendChild(logEntry);
+            });
+        }
+
+        function loadStepScreenshots() {
+            if (!screenshotDir) return;
+            
+            // Get the directory name
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            // Clear existing screenshots
+            document.getElementById('screenshots').innerHTML = 'Loading screenshots...';
+            
+            fetch(`/get-step-screenshots/${dirName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('screenshots').innerHTML = `<p class="text-red-500 font-semibold">Error loading screenshots: ${data.error}</p>`;
+                    return;
+                }
+                
+                if (!data.steps || data.steps.length === 0) {
+                    document.getElementById('screenshots').innerHTML = '<p class="text-gray-600 text-center py-4">No screenshots available.</p>';
+                    return;
+                }
+                
+                // Build the screenshot containers with improved layout
+                let htmlContent = '<div class="space-y-8">';
+                
+                data.steps.forEach((step, index) => {
+                    // Create a step container with direct HTML - using card-like design
+                    htmlContent += `
+                    <div class="step-container bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+                        <div class="step-header bg-blue-50 p-3 flex justify-between items-center border-b border-gray-200">
+                            <div class="font-medium">
+                                <span class="text-blue-600 font-bold">Step ${index + 1}:</span> ${step.description || 'Unnamed step'}
+                            </div>
+                            <button class="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors" 
+                                    onclick="toggleStepContent(this)">
+                                <i class="fas fa-chevron-right"></i> Toggle
+                            </button>
+                        </div>
+                        <div class="step-content p-4" style="display: none;">
+                    `;
+                    
+                    // Add URL and title information with improved styling
+                    if (step.url || step.title) {
+                        htmlContent += `<div class="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200">`;
+                        if (step.url) {
+                            htmlContent += `<div class="mb-2"><span class="font-semibold">URL:</span> <a href="${step.url}" target="_blank" class="text-blue-600 hover:underline">${step.url}</a></div>`;
+                        }
+                        if (step.title) {
+                            htmlContent += `<div><span class="font-semibold">Title:</span> ${step.title}</div>`;
+                        }
+                        htmlContent += `</div>`;
+                    }
+                    
+                    // Add screenshot if available - with improved display
+                    if (step.screenshot_path) {
+                        htmlContent += `
+                            <div class="my-4 bg-gray-50 p-3 border rounded-md text-center">
+                                <img src="/images/${dirName}/${step.screenshot_path}" 
+                                     alt="${step.description || `Step ${index + 1}`}" 
+                                     class="step-screenshot mx-auto border rounded-md shadow-sm" 
+                                     style="max-height: 600px; width: auto; max-width: 100%;" 
+                                     onclick="window.open(this.src, '_blank')">
+                                <div class="mt-3 text-sm text-gray-600">
+                                    ${step.description || `Screenshot ${index + 1}`}
+                                    <a href="/images/${dirName}/${step.screenshot_path}" target="_blank" class="ml-2 text-blue-500 hover:underline">
+                                        <i class="fas fa-external-link-alt"></i> View Full Size
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    
+                    // Add goal if available with improved styling
+                    if (step.goal) {
+                        htmlContent += `
+                            <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                                <span class="font-semibold text-green-700">Goal:</span> ${step.goal}
+                            </div>
+                        `;
+                    }
+                    
+                    // Close the step content and container
+                    htmlContent += `
+                        </div>
+                    </div>
+                    `;
+                });
+                
+                htmlContent += '</div>';
+                
+                // Set inner HTML directly for more reliable rendering
+                document.getElementById('screenshots').innerHTML = htmlContent;
+                
+                // We don't need to add event listeners here as we're using the onclick attribute
+                // in the toggle button which calls toggleStepContent() directly
+                
+                // Don't automatically switch to screenshots tab
+                // switchTab('screenshots');
+            })
+            .catch(error => {
+                console.error('Error loading screenshots:', error);
+                document.getElementById('screenshots').innerHTML = `<p class="text-destructive">Error loading screenshots: ${error.message}</p>`;
+            });
+        }
+
+        <!-- Helper function to determine if URL and title should be skipped for specific steps -->
+        function shouldSkipUrlAndTitle(description) {
+            if (!description) return false;
+            
+            const lowercaseDesc = description.toLowerCase();
+            return (
+                false // Ensure we display all screenshots
+                // Previously was filtering out some screenshots:
+                // lowercaseDesc.includes('initialization') || 
+                // lowercaseDesc.includes('about:blank') || 
+                // lowercaseDesc === 'initialization' || 
+                // lowercaseDesc === 'startup' || 
+                // lowercaseDesc === 'blank page'
+            );
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show the selected tab content
+            document.getElementById(`${tabName}Tab`).classList.add('active');
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Activate the clicked tab button
+            document.querySelectorAll('.tab-button').forEach(button => {
+                if (button.textContent.toLowerCase().includes(tabName.toLowerCase())) {
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        function downloadLogs() {
+            if (!screenshotDir) return;
+            
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            window.location.href = `/download-logs/${dirName}`;
+        }
+
+        function downloadScreenshots() {
+            if (!screenshotDir) return;
+            
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            window.location.href = `/download-screenshots/${dirName}`;
+        }
+
+        function downloadGif() {
+            if (!screenshotDir) return;
+            
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            window.location.href = `/download-gif/${dirName}`;
+        }
+        
+        function toggleStepContent(button) {
+            // Find the step content container (next sibling of the header)
+            const stepHeader = button.closest('.step-header');
+            const stepContent = stepHeader.nextElementSibling;
+            
+            // Toggle the display
+            if (stepContent.style.display === 'none' || stepContent.style.display === '') {
+                stepContent.style.display = 'block';
+                button.innerHTML = '<i class="fas fa-chevron-down"></i> Toggle';
+            } else {
+                stepContent.style.display = 'none';
+                button.innerHTML = '<i class="fas fa-chevron-right"></i> Toggle';
+            }
+        }
+
+        function downloadMp4() {
+            if (!screenshotDir) return;
+            
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            // First check if MP4 exists, or try to convert GIF to MP4
+            fetch(`/convert-gif-to-mp4/${dirName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // MP4 is ready, download it
+                    window.location.href = `/download-mp4/${dirName}`;
+                } else {
+                    // Show error or instruction
+                    alert(data.message || "Could not convert GIF to MP4");
+                }
+            })
+            .catch(error => {
+                console.error("Error converting to MP4:", error);
+                alert("Error: " + error.message);
+            });
+        }
+
+        function checkForGif() {
+            if (!screenshotDir) return;
+            
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            fetch(`/check-gif/${dirName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.exists) {
+                    document.getElementById('downloadGifBtn').style.display = "inline-flex";
+                    document.getElementById('downloadMp4Btn').style.display = "inline-flex";
+                }
+            })
+            .catch(error => {
+                console.error('Error checking for GIF:', error);
+            });
+        }
+
+        function generateMarkdownReport(dirName) {
+            fetch(`/generate-markdown/${dirName}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success" && data.content) {
+                    renderMarkdown(data.content, dirName);
+                } else if (data.error) {
+                    document.getElementById('markdownViewer').innerHTML = 
+                        `<p class="text-red-500">Error generating report: ${data.error}</p>`;
+                }
+            })
+            .catch(error => {
+                console.error("Error generating markdown report:", error);
+                document.getElementById('markdownViewer').innerHTML = 
+                    `<p class="text-red-500">Error generating report: ${error.message}</p>`;
+            });
+        }
+
+        function stopTask() {
+            if (!screenshotDir) {
+                console.error("No active task to stop");
+                return;
+            }
+            
+            // Get the directory name
+            const dirParts = screenshotDir.split('/');
+            const dirName = dirParts[dirParts.length - 1];
+            
+            // Confirm before stopping
+            if (!confirm("Are you sure you want to forcefully stop the running task?")) {
+                return;
+            }
+            
+            // Disable the button during the stop process
+            const stopBtn = document.getElementById('stopTaskBtn');
+            stopBtn.disabled = true;
+            stopBtn.innerText = "Stopping...";
+            
+            // Send stop request to the server
+            fetch(`/stop-task/${dirName}`, {
+                method: 'POST'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    // Update the UI to show task is stopped
+                    document.getElementById('status').innerText = "Terminated";
+                    document.getElementById('submitButton').disabled = false;
+                    document.getElementById('loadingSpinner').classList.add("hidden");
+                    document.getElementById('loadingSpinner').classList.remove("flex");
+                    
+                    // Hide the stop button
+                    stopBtn.style.display = "none";
+                    
+                    // Clear the check interval if it's running
+                    if (checkInterval) {
+                        clearInterval(checkInterval);
+                    }
+                    
+                    // Show a notification
+                    alert("Task has been forcefully terminated.");
+                    
+                    // Load any screenshots that were captured before termination
+                    loadStepScreenshots();
+                    
+                    // Show the view options in case there are partial results
+                    document.getElementById("downloadOptions").style.display = "block";
+                } else if (data.status === "warning") {
+                    alert(data.message);
+                    // Re-enable the button
+                    stopBtn.disabled = false;
+                    stopBtn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i> Stop Task';
+                } else {
+                    throw new Error(data.error || "Unknown error");
+                }
+            })
+            .catch(error => {
+                console.error("Error stopping task:", error);
+                alert("Error stopping task: " + error.message);
+                
+                // Re-enable the button
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i> Stop Task';
+            });
+        }
+        
+        // Add tab switching functionality
+        document.addEventListener("DOMContentLoaded", function() {
+            // Show local browser options on checkbox change
+            document.getElementById('localBrowserToggle').addEventListener('change', function() {
+                document.getElementById('chromePath').style.display = this.checked ? 'block' : 'none';
+            });
+            
+            // Load example task on click
+            document.getElementById('loadExampleButton')?.addEventListener('click', loadExampleTask);
+            
+            // Make sure the stopTaskBtn is initially hidden
+            const stopBtn = document.getElementById('stopTaskBtn');
+            if (stopBtn) stopBtn.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

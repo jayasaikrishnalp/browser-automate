@@ -1,0 +1,430 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Access the URL. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+Username: kk_labs_user_673801
+Password: wfqjqrCRy@G5
+
+Create python lambda function""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input 058264522852 into index 3
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_673801 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input wfqjqrCRy@G5 into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 16: Run
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/begin
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/lambda/home?region=us-east-1#/begin', title='AWS Lambda | Lambda')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Service menu
+You can access all AWS services here. There are sections for recently visited and you can save your favorite services too.
+Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Lambda
+Run code without thinking about servers
+Console Home
+View resource insights, service shortcuts, and feature updates
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+Lambda
+Run code without thinking about servers
+Console Home
+View resource insights, service shortcuts, and feature updates
+[Option+S]
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Regions
+Current Region
+N. Virginia
+us-east-1
+United States
+N. Virginia
+us-east-1
+Ohio
+us-east-2
+N. California
+us-west-1
+Oregon
+us-west-2
+Asia Pacific
+Mumbai
+ap-south-1
+Osaka
+ap-northeast-3
+Seoul
+ap-northeast-2
+Singapore
+ap-southeast-1
+Sydney
+ap-southeast-2
+Tokyo
+ap-northeast-1
+Canada
+Central
+ca-central-1
+Europe
+Frankfurt
+eu-central-1
+Ireland
+eu-west-1
+London
+eu-west-2
+Paris
+eu-west-3
+Stockholm
+eu-north-1
+South America
+São Paulo
+sa-east-1
+There are 15 Regions that are not enabled for this account
+Manage Regions
+|
+Manage Local Zones
+Account
+Account ID
+0582-6452-2852
+IAM user
+kk_labs_user_673801
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button Services;false/>
+[4]<button submit>Next/>
+[5]<input Search;search;combobox/>
+[6]<a CloudShell/>
+[7]<button Notifications (none available)/>
+[8]<button false/>
+[9]<button Settings;false/>
+[10]<button combobox;false;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[11]<button false>kk_labs_user_673801 @ 0582-6452-2852/>
+[12]<div Lambda
+Dashboard
+Applications
+Functions
+Additional resources
+Code signing configurations
+Event source mappings
+Layers
+Replicas
+Related AWS resources
+Step Functions state machines
+Compute
+AWS Lambda
+lets you run code without thinking about servers.
+You pay only for the compute time that you consume — there is no charge when your code is not running. With Lambda, you can run code for virtually any type of application or backend service, all with zero administration.
+Get started
+Author a Lambda function from scratch, or choose from one of many preconfigured examples.
+How it works
+"Hello from Lambda!"
+Just write the code
+Above is a simple Lambda function. Click "Run" to see function output before going to the next step.
+Related services
+Amazon API Gateway is a fully managed service that makes it easy for developers to create, publish, maintain, monitor, and secure APIs at any scale.
+Amazon SNS is a flexible, fully managed pub/sub messaging and mobile notifications service for coordinating the delivery of messages to subscribing endpoints and clients.
+Use cases
+Mobile backends
+Data processing
+You can build a variety of real-time data processing systems using AWS Lambda, Amazon Kinesis, Amazon S3, and Amazon DynamoDB.
+More resources
+Pricing (US)
+First 1M requests / month
+Free
+First 400K GB-sec / month
+Free
+Requests / month
+$0.20 per 1M
+GB-sec / month
+$16.67 per 1M/>
+[13]<button false;Open side navigation/>
+[14]<button false;View Amazon Q panel/>
+[15]<a Create a function/>
+[16]<button submit>Run/>
+[17]<button submit>Next: Lambda responds to events/>
+[18]<button tab>.NET/>
+[19]<button tab>Java/>
+[20]<button tab>Node.js/>
+[21]<button tab>Python/>
+[22]<button tab>Ruby/>
+[23]<button tab>Custom runtime/>
+[24]<div Code Editor;group>הההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההההה
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+JavaScript
+Spaces: 2/>
+[25]<div Editor gutter, press Enter to interact with controls using arrow keys, press Escape to exit;group>1
+2
+3
+4
+5/>
+[26]<span Toggle code folding, rows 1 through 4;true;button;Fold code/>
+[27]<div Editor content, press Enter to start editing, press Escape to exit;group>exports
+.
+handler
+=
+async
+(
+event
+)
+=>
+{
+console
+.
+log
+(
+event
+)
+;
+return
+'Hello from Lambda!'
+;
+}
+;/>
+[28]<button Open action palette (F1)/>
+[29]<button 1:1/>
+[30]<a API Gateway/>
+[31]<a Amazon SNS/>
+[32]<a See more related services/>
+[33]<a Documentation/>
+[34]<a API reference/>
+[35]<a AWS Serverless Application Model (SAM)/>
+[36]<a SAM CLI/>
+[37]<a Forums/>
+[38]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[39]<div />
+[40]<button Open CloudShell>CloudShell/>
+[41]<button Feedback/>
+[42]<ul />
+[43]<a Privacy/>
+[44]<a Terms/>
+[45]<button Cookie preferences/>
+... 774 pixels below - scroll or extract content to see more ...
+Current step: 6/100Current date and time: 2025-04-06 11:48
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully clicked the 'Run' button and can see the Lambda function introduction page with a sample JavaScript function and output 'Hello from Lambda!'",
+    "memory": "I have accessed the AWS console using the provided credentials (Username: kk_labs_user_673801, Password: wfqjqrCRy@G5). I'm now in the AWS Lambda introduction page where I can see a sample JavaScript function. I need to create a Python Lambda function. I see there's a 'Create a function' button in the 'Get started' section. Currently at step 6/100.",
+    "next_goal": "Click on the 'Create a function' button to start creating a Python Lambda function"
+  },
+  "action": [
+    {
+      "click_element": {
+        "index": 15
+      }
+    }
+  ]
+}

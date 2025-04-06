@@ -1,0 +1,533 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """    Navigate to AWS Management Console. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+    [SCREENSHOT]
+
+    Next, Login with username - kk_labs_user_673801 and Password as wfqjqrCRy@G5
+    [SCREENSHOT]
+
+    [SCREENSHOT]
+
+    Search for EC2 in the Search or Click the EC2 Link if you can see it Quick link in the AWS Dashboard.
+
+    [SCREENSHOT]
+
+    Click on the Launch Instances
+
+    [SCREENSHOT]
+
+    On the Instances Dashboard, Give the instance name as "MyBrowseUseInstance"
+
+    [SCREENSHOT]
+
+    Click on Key Pair Drop-Down, selcet Proceed without a Key Pair (Not Recommended) and Launch the Instances
+
+    [SCREENSHOT]
+
+    Click on the Instance Name and Wait for the Instance to be in Running State
+
+    [SCREENSHOT]
+
+    Done
+
+""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_673801 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input wfqjqrCRy@G5 into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input EC2 into index 4
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 71: Launch instance
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:', title='Launch an instance | EC2 | us-east-1')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Service menu
+You can access all AWS services here. There are sections for recently visited and you can save your favorite services too.
+Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+CloudWatch
+Monitor Resources and Applications
+Lambda
+Run code without thinking about servers
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+CloudWatch
+Monitor Resources and Applications
+Lambda
+Run code without thinking about servers
+[Option+S]
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Regions
+Current Region
+N. Virginia
+us-east-1
+United States
+N. Virginia
+us-east-1
+Ohio
+us-east-2
+N. California
+us-west-1
+Oregon
+us-west-2
+Asia Pacific
+Mumbai
+ap-south-1
+Osaka
+ap-northeast-3
+Seoul
+ap-northeast-2
+Singapore
+ap-southeast-1
+Sydney
+ap-southeast-2
+Tokyo
+ap-northeast-1
+Canada
+Central
+ca-central-1
+Europe
+Frankfurt
+eu-central-1
+Ireland
+eu-west-1
+London
+eu-west-2
+Paris
+eu-west-3
+Stockholm
+eu-north-1
+South America
+São Paulo
+sa-east-1
+There are 15 Regions that are not enabled for this account
+Manage Regions
+|
+Manage Local Zones
+Account
+Account ID
+0582-6452-2852
+IAM user
+kk_labs_user_673801
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button false;Services/>
+[4]<button submit>Next/>
+[5]<input combobox;Search;search/>
+[6]<a CloudShell/>
+[7]<button Notifications (none available)/>
+[8]<button false/>
+[9]<button Settings;false/>
+[10]<button false;combobox;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[11]<button false>kk_labs_user_673801 @ 0582-6452-2852/>
+[12]<div ...
+Instances
+Launch an instance
+EC2
+Dashboard
+EC2 Global View
+Events
+Instances
+Instances
+Instance Types
+Launch Templates
+Spot Requests
+Savings Plans
+Reserved Instances
+Dedicated Hosts
+Capacity Reservations
+Images
+AMIs
+AMI Catalog
+Elastic Block Store
+Volumes
+Snapshots
+Lifecycle Manager
+Network & Security
+Security Groups
+Elastic IPs
+Placement Groups
+Key Pairs
+Network Interfaces
+Load Balancing
+Load Balancers
+Target Groups
+Trust Stores
+Auto Scaling
+Auto Scaling Groups
+Settings
+Dashboard
+Launch an instance
+Launch an instance
+Amazon EC2 allows you to create virtual machines, or instances, that run on the AWS Cloud. Quickly get started by following the simple steps below.
+Name and tags
+Name
+An AMI is a template that contains the software configuration (operating system, application server, and applications) required to launch your instance. Search or Browse for AMIs if you don’t see what you are looking for below
+|
+Instance type
+You can use a key pair to securely connect to your instance. Ensure that you have access to the selected key pair before you launch the instance.
+Key pair name
+-
+required
+Network
+-
+Subnet
+-
+Auto-assign public IP
+-
+Firewall (security groups)
+A security group is a set of firewall rules that control the traffic for your instance. Add rules to allow specific traffic to reach your instance.
+Security groups
+Currently no volumes details are specified and therefore the instance will launch with the AMI default volume settings
+Click refresh to view backup information
+The tags that you assign determine whether the instance will be backed up by any Data Lifecycle Manager policies.
+0 x File systems
+Number of instances
+-
+-
+-
+-
+Free tier:
+In your first year of opening an AWS account, you get 750 hours per month of t2.micro instance usage (or t3.micro where t2.micro isn't available) when used with free tier AMIs, 750 hours per month of public IPv4 address usage, 30 GiB of EBS storage, 2 million I/Os, 1 GB of snapshots, and 100 GB of bandwidth to the internet.
+Info
+Tutorial
+Launched instance
+Here are some helpful resources to get you started
+How to connect to your linux instance
+Learn about AWS Free Usage Tier
+Amazon EC2: User Guide
+Amazon EC2: Discussion Forum
+Install a LAMP server
+While your instances are launching you can also
+Create status check alarms
+to be notified when these instances fail status checks.
+(Additional charges may apply)
+Create and attach additional EBS volumes.
+(Additional charges may apply)
+Manage security groups/>
+[13]<button false;Open navigation drawer/>
+[14]<a EC2/>
+[15]<button false;Open help panel/>
+[16]<button View Amazon Q panel;false/>
+[17]<button Console-to-Code;false/>
+[18]<a button;Info>Info
+:/>
+[19]<a button;Info for Name and tags>Info
+:/>
+[20]<input e.g. My Web Server;text/>
+[21]<a button>Add additional tags/>
+[22]<span button;true>Application and OS Images (Amazon Machine Image)/>
+[23]<a button;Info for Application and OS Images (Amazon Machine Image)>Info
+:/>
+[24]<span button;true>Instance type/>
+[25]<a button;Info for Instance type>Info
+:/>
+[26]<a button>Get advice
+:/>
+[27]<button false>Select/>
+[28]<button refresh;submit/>
+[29]<span All generations/>
+[30]<input checkbox/>
+[31]<a button>Compare instance types/>
+[32]<span button;true>Key pair (login)/>
+[33]<a Info for Key pair (login);button>Info
+:/>
+[34]<button false>Select/>
+[35]<button submit;Refresh Key pair name/>
+[36]<a button>Create new key pair/>
+[37]<span button;true>Network settings/>
+[38]<a button;Info for Network settings>Info
+:/>
+[39]<button submit>Edit/>
+[40]<a button;Info for Network>Info
+:/>
+[41]<a Info for Subnet;button>Info
+:/>
+[42]<a Info for Auto-assign public IP;button>Info
+:/>
+[43]<a button;Info for Firewall (security groups)>Info
+:/>
+[44]<div />
+[45]<span Create security group/>
+[46]<input create-new;awsui-tiles-116-1743927155682-8436;radio/>
+[47]<div />
+[48]<span Select existing security group/>
+[49]<input awsui-tiles-116-1743927155682-8436;select-existing;radio/>
+[50]<a button;Info for Security groups>Info
+:/>
+[51]<button false>Select security groups/>
+[52]<button submit;Refresh Security groups/>
+[53]<a button>Compare security group rules/>
+[54]<span button;true>Configure storage/>
+[55]<a Info for Configure storage;button>Info
+:/>
+[56]<a button>Advanced/>
+[57]<button submit>Add new volume/>
+[58]<button refresh;submit/>
+[59]<a button>Edit/>
+[60]<div />
+[61]<span button;true>Summary/>
+[62]<a button;Info for Number of instances>Info
+:/>
+[63]<input 1;number/>
+[64]<a button>Software Image (AMI)/>
+[65]<a button>Virtual server type (instance type)/>
+[66]<a button>Firewall (security group)/>
+[67]<a button>Storage (volumes)/>
+[68]<button Dismiss Free Tier Alert/>
+[69]<button submit>Cancel/>
+[70]<button submit>Launch instance/>
+[71]<button submit>Preview code/>
+[72]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[73]<div />
+[74]<button Open CloudShell>CloudShell/>
+[75]<button Feedback/>
+[76]<ul />
+[77]<a Privacy/>
+[78]<a Terms/>
+[79]<button Cookie preferences/>
+[End of page]
+Current step: 6/100Current date and time: 2025-04-06 13:42
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I have successfully navigated to the EC2 instance launch page where I can configure the new instance.",
+    "memory": "I have successfully logged into the AWS Management Console with the provided credentials (username: kk_labs_user_673801, password: wfqjqrCRy@G5). I have navigated to the EC2 dashboard and clicked on 'Launch instance'. Now I am on the instance configuration page where I need to give the instance a name 'MyBrowseUseInstance', select 'Proceed without a Key Pair (Not Recommended)' from the key pair dropdown, and launch the instance. Then I need to wait for the instance to be in running state. I am at step 5/8 of the overall task.",
+    "next_goal": "Enter 'MyBrowseUseInstance' as the name for the new EC2 instance"
+  },
+  "action": [
+    {
+      "input_text": {
+        "index": 20,
+        "text": "MyBrowseUseInstance"
+      }
+    }
+  ]
+}

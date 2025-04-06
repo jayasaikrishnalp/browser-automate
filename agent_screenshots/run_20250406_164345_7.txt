@@ -1,0 +1,216 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Navigate to Google.com
+[SCREENSHOT: Google Homepage - google_home.png]
+
+Search for "browser automation using AI"
+[SCREENSHOT: Search Results - search_results.png]
+
+Click on one of the relevant results about AI and browser automation
+[SCREENSHOT: Article Page - article.png]
+
+Scroll down to read more about the topic
+[SCREENSHOT: More Content - more_content.png]""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://www.google.com
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input browser automation using AI into index 10
+
+ HumanMessage 
+Action result: Something new appeared after action 1 / 2
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 15:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 28: **The Ultimate Guide to AI-Powered Browser Automation ...
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔍  Scrolled down the page by one page
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://huggingface.co/blog/luigi12345/ai-scraping-browser-automation
+Available tabs:
+[TabInfo(page_id=0, url='https://huggingface.co/blog/luigi12345/ai-scraping-browser-automation', title='**The Ultimate Guide to AI-Powered Browser Automation and Web Scraping**')]
+Interactive elements from top layer of the current page inside the viewport:
+... 1100 pixels above - scroll or extract content to see more ...
+In today's fast-paced digital landscape, browser automation and web scraping have become indispensable tools for developers, researchers, and businesses. The integration of Artificial Intelligence (AI) into these tools has revolutionized their capabilities, enabling dynamic interactions, intelligent data extraction, and advanced task automation. AI-powered solutions adapt to real-time changes, ensuring consistent performance even as websites evolve. This comprehensive guide explores some of the most prominent AI-powered tools for browser automation and web scraping, sorted by popularity. We provide actionable insights, verified installation and usage scripts, and practical examples to help you get started.
+[0]<a />
+Table of Contents
+[1]<a Why Choose AI-Powered Automation?/>
+[2]<a Top AI-Powered Tools for Browser Automation and Web Scraping/>
+[3]<a Key Features and Use Cases/>
+[4]<a Conclusion and Recommendations/>
+[5]<a Additional Resources/>
+[6]<a />
+Why Choose AI-Powered Automation?
+Traditional browser automation tools rely on static workflows, which can be fragile and prone to failure when websites undergo changes in layout or structure. AI-powered tools overcome these limitations by leveraging advanced machine learning models, natural language processing (NLP), and computer vision technologies to understand and interact with web elements dynamically. This adaptability ensures that automation tasks remain robust and effective, even as websites evolve.
+[7]<a />
+Benefits of AI-Powered Automation:
+Adaptability:
+AI models adjust to website changes without manual reconfiguration.
+Intelligence:
+Ability to understand context and make decisions, reducing the need for explicit instructions.
+Efficiency:
+Automate complex tasks swiftly, increasing productivity.
+Scalability:
+Handle large-scale operations, suitable for both enterprises and small businesses.
+User-Friendly Interfaces:
+Visual workflow builders and natural language APIs make these tools accessible to non-developers.
+Extensibility:
+Integration with various APIs and support for multiple programming languages ensure flexibility.
+[8]<a />
+Top AI-Powered Tools for Browser Automation and Web Scraping
+Below is a curated list of top AI-powered tools, sorted by popularity based on GitHub stars. Each section includes both installation and usage scripts in a single, compact code block for your convenience.
+[9]<a />
+1. Auto-GPT
+GitHub Repository:
+[10]<a Auto-GPT/>
+Stars:
+145k
+Overview:
+Auto-GPT is an experimental open-source application showcasing the capabilities of the GPT-4 language model. It allows AI agents to autonomously perform tasks by interacting with applications and services, including web browsing.
+[11]<a Upvote
+3/>
+[12]<a alizki/>
+[13]<img />
+[14]<a mediiiiii3/>
+[15]<img />
+[16]<a mmenshov/>
+[17]<img />
+... 16606 pixels below - scroll or extract content to see more ...
+Current step: 6/100Current date and time: 2025-04-06 16:44
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I have successfully scrolled down and can now see more content about AI-powered browser automation. The article is showing the benefits of AI-powered automation in detail.",
+    "memory": "I have completed 4/4 steps of the task. I have: 1) Navigated to Google.com, 2) Searched for 'browser automation using AI', 3) Clicked on a relevant result about AI and browser automation (The Ultimate Guide to AI-Powered Browser Automation and Web Scraping on Hugging Face), and 4) Scrolled down to read more about the topic. I can now see detailed information about the benefits of AI-powered automation including adaptability, intelligence, efficiency, scalability, user-friendly interfaces, and extensibility. The article also lists popular AI-powered tools starting with Auto-GPT.",
+    "next_goal": "Complete the task as all steps have been accomplished"
+  },
+  "action": [
+    {
+      "done": {
+        "text": "I have successfully completed all the required tasks:\n\n1. Navigated to Google.com\n2. Searched for 'browser automation using AI'\n3. Clicked on a relevant result - 'The Ultimate Guide to AI-Powered Browser Automation and Web Scraping' on Hugging Face\n4. Scrolled down to read more about the topic\n\nThe article I accessed provides comprehensive information about AI-powered browser automation, including its benefits such as adaptability to website changes, intelligence to understand context, efficiency in automating complex tasks, scalability for large operations, user-friendly interfaces, and extensibility through API integrations. The article also begins to list popular AI-powered tools for browser automation, starting with Auto-GPT which has 145k GitHub stars.",
+        "success": true
+      }
+    }
+  ]
+}

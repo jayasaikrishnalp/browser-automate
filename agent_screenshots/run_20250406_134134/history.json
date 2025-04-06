@@ -1,0 +1,132 @@
+[
+  {
+    "step": 0,
+    "description": "Navigate to AWS Management Console...",
+    "url": "about:blank",
+    "title": "",
+    "timestamp": "2025-04-06T13:44:41.323777",
+    "screenshot_path": "about_step_0.png",
+    "requested_filename": null,
+    "goal": "Navigate to AWS Management Console login page"
+  },
+  {
+    "step": 1,
+    "description": "Amazon Web Services Sign",
+    "url": "https://signin.aws.amazon.com/oauth?client_id=arn%3Aaws%3Asignin%3A%3A%3Aconsole%2Fcanvas&code_challenge=gNZ8vtFA8py0kozxIAuDMvsVu-Pdwknm9M42sdPOafY&code_challenge_method=SHA-256&response_type=code&redirect_uri=https%3A%2F%2Fus-east-1.console.aws.amazon.com%2Fconsole%2Fhome%3FhashArgs%3D%2523%26isauthcode%3Dtrue%26region%3Dus-east-1%26state%3DhashArgsFromTB_us-east-1_ccf7efdeef48cfd5",
+    "title": "Amazon Web Services Sign-In",
+    "timestamp": "2025-04-06T13:44:41.323806",
+    "screenshot_path": "signin.aws.amazon.com_Amazon_Web_Services__1.png",
+    "requested_filename": null,
+    "goal": "Enter the login credentials and sign in"
+  },
+  {
+    "step": 2,
+    "description": "Console Home",
+    "url": "https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#",
+    "title": "Console Home | Console Home | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323818",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Console_Home___Conso_2.png",
+    "requested_filename": null,
+    "goal": "Search for EC2 service in the search bar"
+  },
+  {
+    "step": 3,
+    "description": "Console Home",
+    "url": "https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#",
+    "title": "Console Home | Console Home | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323826",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Console_Home___Conso_3.png",
+    "requested_filename": null,
+    "goal": "Click on the EC2 service option to navigate to the EC2 dashboard"
+  },
+  {
+    "step": 4,
+    "description": "Dashboard",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Home:",
+    "title": "Dashboard | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323834",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Dashboard___EC2___us_4.png",
+    "requested_filename": null,
+    "goal": "Click on 'Launch instance' to start creating a new EC2 instance"
+  },
+  {
+    "step": 5,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323854",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___5.png",
+    "requested_filename": null,
+    "goal": "Enter 'MyBrowseUseInstance' as the name for the new EC2 instance"
+  },
+  {
+    "step": 6,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323867",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___6.png",
+    "requested_filename": null,
+    "goal": "Click on Key Pair dropdown and select 'Proceed without a Key Pair'"
+  },
+  {
+    "step": 7,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323880",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___7.png",
+    "requested_filename": null,
+    "goal": "Select 'Proceed without a key pair (Not recommended)' option"
+  },
+  {
+    "step": 8,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323887",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___8.png",
+    "requested_filename": null,
+    "goal": "Click on 'Launch instance' button to create the EC2 instance"
+  },
+  {
+    "step": 9,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323896",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___9.png",
+    "requested_filename": null,
+    "goal": "Wait for the instance to be created and then view the instances page to check its status"
+  },
+  {
+    "step": 10,
+    "description": "Launch an instance",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#LaunchInstances:",
+    "title": "Launch an instance | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323904",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Launch_an_instance___10.png",
+    "requested_filename": null,
+    "goal": "Click on 'View all instances' to check the status of the created instance"
+  },
+  {
+    "step": 11,
+    "description": "Instances",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:",
+    "title": "Instances | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323914",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Instances___EC2___us_11.png",
+    "requested_filename": null,
+    "goal": "Wait for the instance to load and check if it is in the running state"
+  },
+  {
+    "step": 12,
+    "description": "Instances",
+    "url": "https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:",
+    "title": "Instances | EC2 | us-east-1",
+    "timestamp": "2025-04-06T13:44:41.323921",
+    "screenshot_path": "us-east-1.console.aws.amazon.com_Instances___EC2___us_12.png",
+    "requested_filename": null,
+    "goal": "Complete the task as the instance is now in Running state"
+  }
+]

@@ -1,0 +1,22 @@
+    Navigate to AWS Management Console. https://339713012203.signin.aws.amazon.com/console?region=us-east-1
+
+    [SCREENSHOT]
+
+    Next, Login with username - kk_labs_user_599993 and Password as uZcBZY@u^N9T
+[SCREENSHOT]
+
+Search for EC2 in the Search or Click the EC2 Link if you can see it Quick link in the AWS Dashboard.
+
+[SCREENSHOT]
+
+Click on the Instances and Terminate the Instances that are Running in the Instances Dashboard 
+
+[SCREENSHOT]
+
+by Selecting the Running instances on Drop Down Instnace State and Click on terminate Instance 
+
+[SCREENSHOT]
+
+Wait for Instance to be terminated
+
+[SCREENSHOT]

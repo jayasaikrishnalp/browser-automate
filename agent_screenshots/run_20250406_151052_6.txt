@@ -1,0 +1,306 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Go to www.youtube.com, and search for latest videos on Anthropic channel""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://www.youtube.com
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input Anthropic channel latest videos into index 3
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input Anthropic into index 3
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://www.youtube.com/results?search_query=anthropic+channel
+Available tabs:
+[TabInfo(page_id=0, url='https://www.youtube.com/results?search_query=anthropic+channel', title='anthropic channel - YouTube')]
+Interactive elements from top layer of the current page inside the viewport:
+... 978 pixels above - scroll or extract content to see more ...
+[0]<button Guide/>
+[1]<a YouTube Home/>
+IN
+[2]<div />
+[3]<input text;Search;true;search_query;combobox/>
+[4]<button Clear search query/>
+[5]<button Search/>
+[6]<div listbox/>
+[7]<div anthropic principle;option/>
+[8]<span button>anthropic
+principle/>
+[9]<div anthropic principle in hindi;option/>
+[10]<span button>anthropic
+principle
+in
+hindi/>
+[11]<div anthropic;option/>
+[12]<span button>anthropic/>
+[13]<div anthropic ai;option/>
+[14]<span button>anthropic
+ai/>
+[15]<div anthropic principle pbs;option/>
+[16]<span button>anthropic
+principle
+pbs/>
+[17]<div anthropic computer use;option/>
+[18]<span button>anthropic
+computer
+use/>
+[19]<div anthropic mcp;option/>
+[20]<span button>anthropic
+mcp/>
+[21]<div anthropic prompt engineering;option/>
+[22]<span button>anthropic
+prompt
+engineering/>
+[23]<div anthropic claude ai;option/>
+[24]<span button>anthropic
+claude
+ai/>
+[25]<div anthropic ceo;option/>
+[26]<span button>anthropic
+ceo/>
+[27]<div anthropic claude;option/>
+[28]<span button>anthropic
+claude/>
+[29]<div anthropic api key;option/>
+[30]<span button>anthropic
+api
+key/>
+[31]<div anthropic ai agent;option/>
+[32]<span button>anthropic
+ai
+agent/>
+[33]<div anthropic new paper;option/>
+[34]<span button>anthropic
+new
+paper/>
+[35]<button Report search predictions/>
+[36]<button Search with your voice/>
+[37]<a />
+[38]<button Settings/>
+[39]<a Sign in/>
+[40]<ytd-mini-guide-entry-renderer tab;Home/>
+[41]<a Home>Home
+Home/>
+[42]<ytd-mini-guide-entry-renderer tab;Shorts/>
+[43]<a Shorts>Shorts
+Shorts/>
+[44]<ytd-mini-guide-entry-renderer tab;Subscriptions/>
+[45]<a Subscriptions>Subscriptions
+Subscriptions/>
+[46]<ytd-mini-guide-entry-renderer tab;You/>
+[47]<a You>You
+You/>
+[48]<ytd-mini-guide-entry-renderer tab;History/>
+[49]<a History>History
+History/>
+[50]<a />
+[51]<a @anthropic-ai
+•
+114K subscribers
+We're an AI safety and research company. Talk to our AI assistant Claude on claude.com. Download Claude on desktop, iOS, .../>
+[52]<a Subscribe/>
+Shorts
+[53]<button More actions/>
+[54]<div 12K views/>
+[55]<a Anthropic CEO: In one year, AI will be writing 100% of code/>
+Anthropic's New AI Tools Revolutionize Development A Game Changer for Developers | Suman iTTV
+78 views
+Top AI Trends - You Must Know in June 2024 - Anthropic launches a hands-on course #shorts
+11 views
+[56]<div 505 views/>
+[57]<a AI That Controls Your Computer? Meet Anthropic’s Claude! #ai #claude #technology #automation/>
+[58]<button More actions/>
+[59]<div 172 views/>
+[60]<a AI Game Changer: Anthropic’s Afro tier Model to Revolutionize Human-AI Interaction/>
+Anthropic ने पेश किया PDF Image Understanding फीचर! | AI Anchor Sana #anthropic #claude
+94 views
+[61]<button More actions/>
+[62]<button Next/>
+No Car Parking Charges | 90L* Only
+A Grand Scale 85,000 sft Clubhouse & 105+ Lifestyle Amenities For You & Your Family.
+Sponsored
+Urbanrise
+[63]<button My Ad Centre/>
+4:03
+[64]<a Anthropic Just Dropped a Stunning Paper — And It Might Change How We Understand AI | FrontPage by AIM TV 6,780 views 1 day ago 4 minutes, 3 seconds>Anthropic Just Dropped a Stunning Paper — And It Might Change How We Understand AI | FrontPage/>
+[65]<button Action menu/>
+6.7K views
+1 day ago
+[66]<a Go to channel/>
+[67]<a AIM TV/>
+Anthropic
+just released one of the most fascinating and visually striking AI research papers of the year ...
+New
+4K
+[68]<a 1:16:43
+1:16:43
+Now playing/>
+[69]<img />
+[70]<a AI prompt engineering: A deep dive by Anthropic 231,203 views 7 months ago 1 hour, 16 minutes>AI prompt engineering: A deep dive/>
+[71]<button Action menu/>
+231K views
+7 months ago
+[72]<a Go to channel/>
+[73]<a Anthropic/>
+Some of
+Anthropic's
+prompt engineering experts—Amanda Askell (Alignment Finetuning), Alex Albert (Developer Relations), ...
+Subtitles
+11
+chapters
+[74]<div button>Introduction | Defining prompt engineering | What makes a good prompt engineer | Refining prompts | Honesty, personas and metaphors in prompts | Model reasoning | Enterprise vs research vs general chat prompts | Tips to improve prompting skills | Jailbreaking | Evolution of prompt engineering | Future of prompt engineering/>
+[75]<button More/>
+[76]<a />
+[77]<a 3 & 4 BHK Homes Near Amazon Campus/>
+[78]<a />
+[79]<a 3 & 4 BHKs in Financial District | 44-Floor Luxury Living with 30+ Amenities & Clubhouse/>
+Sponsored
+The Olympus
+[80]<button My Ad Centre/>
+[81]<a 2:03
+2:03
+Now playing/>
+[82]<a Claude | Computer use for automating operations by Anthropic 308,696 views 5 months ago 2 minutes, 3 seconds>Claude | Computer use for automating operations/>
+[83]<button Action menu/>
+308K views
+5 months ago
+[84]<a Go to channel/>
+[85]<a Anthropic/>
+With the upgraded Claude 3.5 Sonnet, we're introducing a new capability in beta: computer use. Developers can now direct ...
+Subtitles
+3
+chapters
+[86]<div button>Introduction | Demo | Example/>
+[87]<button More/>
+... 7626 pixels below - scroll or extract content to see more ...
+Current step: 5/100Current date and time: 2025-04-06 15:11
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully searched for 'Anthropic' and now I can see search results showing videos from the Anthropic channel and videos about Anthropic. I can see the official Anthropic channel link with 114K subscribers.",
+    "memory": "I navigated to YouTube.com and initially searched for 'Anthropic channel latest videos', which didn't yield proper results. I then searched for 'Anthropic' directly, which has successfully shown search results including the official Anthropic channel (@anthropic-ai with 114K subscribers) and several videos from the channel. I can see the latest videos from Anthropic including 'AI prompt engineering: A deep dive' (7 months ago), 'Claude | Computer use for automating operations' (5 months ago), and other recent content.",
+    "next_goal": "Click on the Anthropic channel (@anthropic-ai) to see all their latest videos"
+  },
+  "action": [
+    {
+      "click_element": {
+        "index": 51
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+Navigate to AWS Management Console. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+    [SCREENSHOT]
+
+    Next, Login with username - kk_labs_user_673801 and Password as wfqjqrCRy@G5
+    [SCREENSHOT]
+
+    [SCREENSHOT]
+
+    Search for EC2 in the Search or Click the EC2 Link if you can see it Quick link in the AWS Dashboard.
+
+    [SCREENSHOT]
+
+    Click on the Launch Instances
+
+    [SCREENSHOT]
+
+    On the Instances Dashboard, Give the instance name as "MyBrowseUseInstance"
+
+    [SCREENSHOT]
+
+    Click on Key Pair Drop-Down, selcet Proceed without a Key Pair (Not Recommended) and Launch the Instances
+
+    [SCREENSHOT]
+
+    Click on the Instance Name and Wait for the Instance to be in Running State
+
+    [SCREENSHOT]
+
+    Done

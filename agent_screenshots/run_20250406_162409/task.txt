@@ -1,0 +1,11 @@
+Navigate to Google.com
+[SCREENSHOT: Google Homepage - google_home.png]
+
+Search for "browser automation using AI"
+[SCREENSHOT: Search Results - search_results.png]
+
+Click on one of the relevant results about AI and browser automation
+[SCREENSHOT: Article Page - article.png]
+
+Scroll down to read more about the topic
+[SCREENSHOT: More Content - more_content.png]

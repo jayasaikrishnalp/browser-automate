@@ -1,0 +1,461 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Navigate to AWS Management Console. https://975050112440.signin.aws.amazon.com/console?region=us-east-1
+
+Next, Login with username - kk_labs_user_273954 and Password as uz4At^^LQDSx
+
+Search for EC2 in the Search or Click the EC2 Link if you can see it Quick link in the AWS Dashboard.
+
+Click on the Launch Instances
+
+On the Instances Dashboard, Give the instance name as "MyBrowseUseInstance"
+
+Click on Key Pair Drop-Down, selcet Proceed without a Key Pair (Not Recommended) and Launch the Instances
+
+Wait for Instance to be in Running State, If there are error, Dont Repeat these steps, Show the error screenshot
+""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://975050112440.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_273954 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input uz4At^^LQDSx into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Home:
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Home:', title='Dashboard | EC2 | us-east-1')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+[Option+S]
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Regions
+Current Region
+N. Virginia
+us-east-1
+United States
+N. Virginia
+us-east-1
+Ohio
+us-east-2
+N. California
+us-west-1
+Oregon
+us-west-2
+Asia Pacific
+Mumbai
+ap-south-1
+Osaka
+ap-northeast-3
+Seoul
+ap-northeast-2
+Singapore
+ap-southeast-1
+Sydney
+ap-southeast-2
+Tokyo
+ap-northeast-1
+Canada
+Central
+ca-central-1
+Europe
+Frankfurt
+eu-central-1
+Ireland
+eu-west-1
+London
+eu-west-2
+Paris
+eu-west-3
+Stockholm
+eu-north-1
+South America
+São Paulo
+sa-east-1
+There are 15 Regions that are not enabled for this account
+Manage Regions
+|
+Manage Local Zones
+Account
+Account ID
+9750-5011-2440
+IAM user
+kk_labs_user_273954
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button false;Services/>
+[4]<input Search;combobox;search/>
+[5]<a CloudShell/>
+[6]<button Notifications (none available)/>
+[7]<button false/>
+[8]<button Settings;false/>
+[9]<button false;combobox;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[10]<button false>kk_labs_user_273954 @ 9750-5011-2440/>
+[11]<div Dashboard
+You can change your default landing page for EC2.
+Resources
+You are using the following Amazon EC2 resources in the United States (N. Virginia) Region:
+Launch instance
+To get started, launch an Amazon EC2 instance, which is a virtual server in the cloud.
+Note: Your instances will launch in the United States (N. Virginia) Region
+Instance alarms
+0 in alarm
+0 OK
+0 insufficient data
+Scheduled events
+United States (N. Virginia)
+Migrate a server
+Use AWS Application Migration Service to simplify and expedite migration from physical, virtual, and cloud infrastructure to AWS.
+Quick ID filter
+Service health
+An error occurred
+An error occurred retrieving service health information
+Zones
+Zone name
+Zone ID
+EC2 Free Tier
+Offers for all AWS Regions.
+Account attributes
+Settings
+Explore AWS
+10 Things You Can Do Today to Reduce AWS Costs
+Explore how to effectively manage your AWS costs without compromising on performance or capacity.
+Get Up to 40% Better Price Performance
+T4g instances deliver the best price performance for burstable general purpose workloads in Amazon EC2.
+Amazon GuardDuty Malware Protection
+GuardDuty now provides agentless malware detection in Amazon EC2 & EC2 container workloads.
+Additional information/>
+[12]<button false;Open navigation drawer/>
+[13]<button false;View Amazon Q panel/>
+[14]<nav />
+[15]<button Close drawer/>
+[16]<a EC2/>
+[17]<a Dashboard/>
+[18]<a EC2 Global View/>
+[19]<a Events/>
+[20]<div />
+[21]<span true;button>Instances/>
+[22]<a Instances/>
+[23]<a Instance Types/>
+[24]<a Launch Templates/>
+[25]<a Spot Requests/>
+[26]<a Savings Plans/>
+[27]<a Reserved Instances/>
+[28]<a Dedicated Hosts/>
+[29]<a Capacity Reservations/>
+[30]<div />
+[31]<span true;button>Images/>
+[32]<a AMIs/>
+[33]<a AMI Catalog/>
+[34]<div />
+[35]<span true;button>Elastic Block Store/>
+[36]<a Volumes/>
+[37]<a Snapshots/>
+[38]<a Lifecycle Manager/>
+[39]<div />
+[40]<span true;button>Network & Security/>
+[41]<a Security Groups/>
+[42]<a Elastic IPs/>
+[43]<a Placement Groups/>
+[44]<a Key Pairs/>
+[45]<a Network Interfaces/>
+[46]<div />
+[47]<span true;button>Load Balancing/>
+[48]<a Load Balancers/>
+[49]<a Target Groups/>
+[50]<a Trust Stores/>
+[51]<div />
+[52]<span true;button>Auto Scaling/>
+[53]<a Auto Scaling Groups/>
+[54]<a Settings/>
+[55]<a button>Permanently dismiss/>
+[56]<button submit>Change landing page/>
+[57]<button />
+[58]<button submit;EC2 Global View (Opens in a new tab)>EC2 Global View/>
+[59]<button Resource settings;submit/>
+[60]<button submit;Refresh resources/>
+[61]<a Instances (running)>Instances (running)
+0/>
+[62]<a Auto Scaling Groups/>
+[63]<a Capacity Reservations/>
+[64]<a Dedicated Hosts/>
+[65]<a Elastic IPs/>
+[66]<a Instances>Instances
+0/>
+[67]<a Key pairs/>
+[68]<a Load balancers/>
+[69]<a Placement groups/>
+[70]<a Security groups/>
+[71]<a Snapshots/>
+[72]<a Volumes/>
+[73]<a Launch instance/>
+[74]<button false;More options/>
+[75]<a Migrate a server/>
+[76]<a View alarms in CloudWatch (opens new tab)>View in CloudWatch/>
+[77]<a Instances in alarm/>
+[78]<button submit;Refresh scheduled events/>
+[79]<a Get started with AWS Application Migration Serviceundefined>Get started with AWS Application Migration Service/>
+[80]<input Enter a resource ID;text/>
+[81]<a AWS Health Dashboard/>
+[82]<button submit;Refresh service health/>
+[83]<div />
+[84]<button Diagnose with Amazon Q/>
+[85]<img />
+[86]<a Enable additional Zones/>
+[87]<a Show help for EC2 Free Tier;button>Info
+:/>
+[88]<a View all AWS Free Tier offers, opens in a new tab>View all AWS Free Tier offers/>
+[89]<button Refresh account attributes;submit/>
+[90]<a Data protection and security/>
+[91]<a Allowed AMIs/>
+[92]<a Zones/>
+[93]<a EC2 Serial Console/>
+[94]<a Default credit specification/>
+[95]<a EC2 console preferences/>
+[96]<button Dismiss;submit/>
+[97]<a Learn more: 10 Things You Can Do Today to Reduce AWS Costsundefined>Learn more/>
+[98]<a Learn more: Get Up to 40% Better Price Performanceundefined>Learn more/>
+[99]<a Learn more: Amazon GuardDuty Malware Protectionundefined>Learn more/>
+[100]<a Get started walkthroughs/>
+[101]<a Getting started guide/>
+[102]<a Documentation/>
+[103]<a All EC2 resources/>
+[104]<a Forums/>
+[105]<a Pricing/>
+[106]<a Contact us/>
+[107]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[108]<div />
+[109]<button Open CloudShell>CloudShell/>
+[110]<button Feedback/>
+[111]<ul />
+[112]<a Privacy/>
+[113]<a Terms/>
+[114]<button Cookie preferences/>
+[End of page]
+Current step: 4/100Current date and time: 2025-04-06 15:00
+
+Action error 1/1: ...Failed to click element: <a id="link-self:r83:" data-analytics="nullstate_serviceLink_ec2" data-analytics-type="eventDetail" data-awsui-analytics="{"action":"click","detail":{"label":{"root":"self"},"external":"false","href":"/ec2/home?region=us-east-1"},"component":{"name":"awsui.Link","label":{"root":"self"},"properties":{"variant":"secondary"}}}" class="awsui_link_4c84z_huzqy_145 awsui_variant-secondary_4c84z_huzqy_211 awsui_font-size-body-m_4c84z_huzqy_475" data-analytics-funnel-value="link:r82:" href="/ec2/home?region=us-east-1"> [interactive, top, highlight:20, in-viewport]. Error: Failed to click element: Page.evaluate: Execution context was destroyed, most likely because of a navigation
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully navigated to the EC2 dashboard. I can now see the EC2 console with various options including the 'Launch instance' button.",
+    "memory": "I have successfully navigated to the AWS Management Console and logged in with the provided credentials. I'm now at the EC2 dashboard page. I can see the 'Launch instance' button at index [73]. According to the task, I need to click on 'Launch Instances' and then configure an instance named 'MyBrowseUseInstance', select 'Proceed without a Key Pair' option, and monitor the instance until it's in Running state. I'm at step 4/100 of the task.",
+    "next_goal": "Click on 'Launch instance' to start creating a new EC2 instance"
+  },
+  "action": [
+    {
+      "click_element": {
+        "index": 73
+      }
+    }
+  ]
+}

@@ -1,0 +1,643 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """    Navigate to AWS Management Console. https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+    [SCREENSHOT]
+
+    Next, Login with username - kk_labs_user_673801 and Password as wfqjqrCRy@G5
+    [SCREENSHOT]
+
+    [SCREENSHOT]
+
+    Search for EC2 in the Search or Click the EC2 Link if you can see it Quick link in the AWS Dashboard.
+
+    [SCREENSHOT]
+
+    Click on the Launch Instances
+
+    [SCREENSHOT]
+
+    On the Instances Dashboard, Give the instance name as "MyBrowseUseInstance"
+
+    [SCREENSHOT]
+
+    Click on Key Pair Drop-Down, selcet Proceed without a Key Pair (Not Recommended) and Launch the Instances
+
+    [SCREENSHOT]
+
+    Click on the Instance Name and Wait for the Instance to be in Running State
+
+    [SCREENSHOT]
+
+    Done
+
+""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://058264522852.signin.aws.amazon.com/console?region=us-east-1
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input kk_labs_user_673801 into index 4
+
+ HumanMessage 
+Action result: ⌨️  Input wfqjqrCRy@G5 into index 5
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7: Sign in
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input EC2 into index 4
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 71: Launch instance
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input MyBrowseUseInstance into index 20
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 49: Select
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 44:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 87: Launch instance
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🕒  Waiting for 15 seconds
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 41: View all instances
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🕒  Waiting for 10 seconds
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:
+Available tabs:
+[TabInfo(page_id=0, url='https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#Instances:', title='Instances | EC2 | us-east-1')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<div Service menu
+You can access all AWS services here. There are sections for recently visited and you can save your favorite services too.
+Services
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+CloudWatch
+Monitor Resources and Applications
+Lambda
+Run code without thinking about servers
+Recently visited
+Favorites
+All applications
+All services
+Analytics
+Application Integration
+Blockchain
+Business Applications
+Cloud Financial Management
+Compute
+Containers
+Customer Enablement
+Database
+Developer Tools
+End User Computing
+Front-end Web & Mobile
+Game Development
+Internet of Things
+Machine Learning
+Management & Governance
+Media Services
+Migration & Transfer
+Networking & Content Delivery
+Quantum Technologies
+Robotics
+Satellite
+Security, Identity, & Compliance
+Storage
+Recently visited
+EC2
+Virtual Servers in the Cloud
+Console Home
+View resource insights, service shortcuts, and feature updates
+CloudWatch
+Monitor Resources and Applications
+Lambda
+Run code without thinking about servers
+[Option+S]
+More
+Help & support
+Support
+Support Center
+Expert Help
+re:Post
+Documentation
+Training
+Getting Started Resource Center
+Send feedback
+Settings
+Current user settings
+Language
+Browser default
+Visual mode
+-
+beta
+Browser default
+Light
+Dark
+See all user settings
+Regions
+Current Region
+N. Virginia
+us-east-1
+United States
+N. Virginia
+us-east-1
+Ohio
+us-east-2
+N. California
+us-west-1
+Oregon
+us-west-2
+Asia Pacific
+Mumbai
+ap-south-1
+Osaka
+ap-northeast-3
+Seoul
+ap-northeast-2
+Singapore
+ap-southeast-1
+Sydney
+ap-southeast-2
+Tokyo
+ap-northeast-1
+Canada
+Central
+ca-central-1
+Europe
+Frankfurt
+eu-central-1
+Ireland
+eu-west-1
+London
+eu-west-2
+Paris
+eu-west-3
+Stockholm
+eu-north-1
+South America
+São Paulo
+sa-east-1
+There are 15 Regions that are not enabled for this account
+Manage Regions
+|
+Manage Local Zones
+Account
+Account ID
+0582-6452-2852
+IAM user
+kk_labs_user_673801
+Account
+Organization
+Service Quotas
+Billing and Cost Management
+Security credentials
+Turn on multi-session support
+Switch role
+Sign out/>
+[1]<a AWS Console Home/>
+[2]<a Skip to Main Content/>
+[3]<button false;Services/>
+[4]<button submit>Next/>
+[5]<input combobox;Search;search/>
+[6]<a CloudShell/>
+[7]<button Notifications (none available)/>
+[8]<button false/>
+[9]<button Settings;false/>
+[10]<button false;combobox;Regions (United States (N. Virginia))>United States (N. Virginia)/>
+[11]<button false>kk_labs_user_673801 @ 0582-6452-2852/>
+[12]<div ...
+Instances
+Dashboard
+Instances
+Instances
+(1)
+Last updated
+less than a minute ago
+Instance state filter
+Alarm details for
+Close/>
+[13]<button false;Open navigation drawer/>
+[14]<a EC2/>
+[15]<button Open;true/>
+[16]<button View Amazon Q panel;false/>
+[17]<button Console-to-Code;false/>
+[18]<nav EC2
+EC2 Global View/>
+[19]<a Dashboard/>
+[20]<a Events/>
+[21]<div />
+[22]<span button;true>Instances/>
+[23]<a Instances/>
+[24]<a Instance Types/>
+[25]<a Launch Templates/>
+[26]<a Spot Requests/>
+[27]<a Savings Plans/>
+[28]<a Reserved Instances/>
+[29]<a Dedicated Hosts/>
+[30]<a Capacity Reservations/>
+[31]<div />
+[32]<span button;true>Images/>
+[33]<a AMIs/>
+[34]<a AMI Catalog/>
+[35]<div />
+[36]<span button;true>Elastic Block Store/>
+[37]<a Volumes/>
+[38]<a Snapshots/>
+[39]<a Lifecycle Manager/>
+[40]<div />
+[41]<span button;true>Network & Security/>
+[42]<a Security Groups/>
+[43]<a Elastic IPs/>
+[44]<a Placement Groups/>
+[45]<a Key Pairs/>
+[46]<a Network Interfaces/>
+[47]<div />
+[48]<span button;true>Load Balancing/>
+[49]<a Load Balancers/>
+[50]<a Target Groups/>
+[51]<a Trust Stores/>
+[52]<div />
+[53]<span button;true>Auto Scaling/>
+[54]<a Auto Scaling Groups/>
+[55]<a Settings/>
+[56]<a button;Show help for finding resources>Info
+:/>
+[57]<button submit;Refresh instances/>
+[58]<button submit>Connect/>
+[59]<button false>Instance state/>
+[60]<button false>Actions/>
+[61]<button Launch instances/>
+[62]<button false;More actions/>
+[63]<input Search for instances;combobox;false;Find Instance by attribute or tag (case-sensitive);text/>
+[64]<button false>All states/>
+[65]<button Previous page/>
+[66]<button Page {{pageNumber}}>1/>
+[67]<button Next page/>
+[68]<button Preferences/>
+[69]<table grid>Instance ID
+Status check
+Alarm status
+Elastic IP/>
+[70]<label />
+[71]<span />
+[72]<input checkbox/>
+[73]<div button>Name/>
+[74]<button />
+[75]<button />
+[76]<div button>Instance state/>
+[77]<button />
+[78]<div button>Instance type/>
+[79]<button />
+[80]<button />
+[81]<button />
+[82]<div button>Availability Zone/>
+[83]<button />
+[84]<div button>Public IPv4 DNS/>
+[85]<button />
+[86]<div button>Public IPv4 address/>
+[87]<button />
+[88]<button />
+[89]<div button>IPv6 IPs/>
+[90]<div region/>
+[91]<table grid>Instance ID
+Status check
+Alarm status
+Elastic IP/>
+[92]<label />
+[93]<span />
+[94]<input checkbox/>
+[95]<div button>Name/>
+[96]<button />
+[97]<button />
+[98]<div button>Instance state/>
+[99]<button />
+[100]<div button>Instance type/>
+[101]<button />
+[102]<button />
+[103]<button />
+[104]<div button>Availability Zone/>
+[105]<button />
+[106]<div button>Public IPv4 DNS/>
+[107]<button />
+[108]<div button>Public IPv4 address/>
+[109]<button />
+[110]<button />
+[111]<div button>IPv6 IPs/>
+[112]<tr Running
+t2.micro
+Initializing
+us-east-1c
+ec2-18-212-246-154.compute-1.amazonaws.com
+18.212.246.154
+–
+–/>
+[113]<label />
+[114]<span />
+[115]<input checkbox/>
+[116]<td MyBrowseUseInstance/>
+[117]<button Edit [object Object]/>
+[118]<a i-0f1008323ba11264d/>
+[119]<button submit;Filter table to show running instances/>
+[120]<button submit;Filter table to exclude running instances/>
+[121]<a button;View alarms for i-0f1008323ba11264d>View alarms/>
+[122]<button submit;Add alarm for instance: MyBrowseUseInstance/>
+[123]<nav menu/>
+[124]<div menuitem>Launch instances/>
+[125]<div menuitem>Launch instance from template/>
+[126]<div menuitem>Migrate a server/>
+[127]<div menuitem/>
+[128]<div menuitem>Connect/>
+[129]<div menuitem/>
+[130]<div menuitem>Stop instance/>
+[131]<div menuitem>Start instance/>
+[132]<div menuitem>Reboot instance/>
+[133]<div menuitem>Hibernate instance/>
+[134]<div menuitem>Terminate (delete) instance/>
+[135]<nav menuitem/>
+[136]<div Instance settings/>
+[137]<nav menu/>
+[138]<div menuitem>Attach to Auto Scaling Group/>
+[139]<div menuitem>Change termination protection/>
+[140]<div menuitem>Change stop protection/>
+[141]<div menuitem>Change shutdown behavior/>
+[142]<div menuitem>Change auto-recovery behavior/>
+[143]<div menuitem>Change instance type/>
+[144]<div menuitem>Change CPU options/>
+[145]<div menuitem>Change Nitro Enclaves/>
+[146]<div menuitem>Change credit specification/>
+[147]<div menuitem>Change resource based naming options/>
+[148]<div menuitem>Modify instance placement/>
+[149]<div menuitem>Modify Capacity Reservation settings/>
+[150]<div menuitem>Edit user data/>
+[151]<div menuitem>Allow tags in instance metadata/>
+[152]<div menuitem>Manage tags/>
+[153]<div menuitem>Modify instance metadata options/>
+[154]<nav menuitem/>
+[155]<div Networking/>
+[156]<nav menu/>
+[157]<div menuitem>Attach network interface/>
+[158]<div menuitem>Detach network interface/>
+[159]<div menuitem>Connect RDS database/>
+[160]<div menuitem>Change source/destination check/>
+[161]<div menuitem>Disassociate Elastic IP address/>
+[162]<div menuitem>Manage IP addresses/>
+[163]<div menuitem>Manage ENA Express/>
+[164]<div menuitem>Manage bandwidth/>
+[165]<nav menuitem/>
+[166]<div Security/>
+[167]<nav menu/>
+[168]<div menuitem>Change security groups/>
+[169]<div menuitem>Get Windows password/>
+[170]<div menuitem>Modify IAM role/>
+[171]<nav menuitem/>
+[172]<div Image and templates/>
+[173]<nav menu/>
+[174]<div menuitem>Create image/>
+[175]<div menuitem>Create template from instance/>
+[176]<div menuitem>Launch more like this/>
+[177]<nav menuitem/>
+[178]<div Monitor and troubleshoot/>
+[179]<nav menu/>
+[180]<div menuitem>Get system log/>
+[181]<div menuitem>Get instance screenshot/>
+[182]<div menuitem>Manage detailed monitoring/>
+[183]<div menuitem>Manage CloudWatch alarms/>
+[184]<div menuitem>Configure CloudWatch agent/>
+[185]<div menuitem>EC2 serial console/>
+[186]<div menuitem>Replace root volume/>
+[187]<div menuitem>Instance audit/>
+[188]<div Select an instance/>
+[189]<div Slider;slider/>
+[190]<button Preferences/>
+[191]<button true;Close/>
+[192]<div ©
+2025
+,
+Amazon Web Services, Inc.
+or its affiliates./>
+[193]<div />
+[194]<button Open CloudShell>CloudShell/>
+[195]<button Feedback/>
+[196]<ul />
+[197]<a Privacy/>
+[198]<a Terms/>
+[199]<button Cookie preferences/>
+[End of page]
+Current step: 13/100Current date and time: 2025-04-06 13:44
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - The instances page has loaded and I can see the MyBrowseUseInstance is now visible in the running state. The instance is currently initializing but has been successfully created and is running.",
+    "memory": "I have successfully logged into the AWS Management Console with the provided credentials (username: kk_labs_user_673801, password: wfqjqrCRy@G5). I have navigated to the EC2 dashboard, clicked on 'Launch instance', entered 'MyBrowseUseInstance' as the instance name, selected 'Proceed without a Key Pair (Not Recommended)' from the key pair dropdown, and clicked on 'Launch instance'. The instance has been successfully created with ID i-0f1008323ba11264d and is now in the 'Running' state with status 'Initializing'. The instance has been assigned a public IP address (18.212.246.154) and DNS name (ec2-18-212-246-154.compute-1.amazonaws.com). I have completed all the required steps for this task.",
+    "next_goal": "Complete the task as the instance is now in Running state"
+  },
+  "action": [
+    {
+      "done": {
+        "text": "I have successfully completed all the required tasks:\n\n1. Navigated to AWS Management Console and logged in with the provided credentials (username: kk_labs_user_673801, password: wfqjqrCRy@G5)\n2. Searched for EC2 service and navigated to the EC2 dashboard\n3. Clicked on 'Launch Instances'\n4. Named the instance 'MyBrowseUseInstance'\n5. Selected 'Proceed without a Key Pair (Not Recommended)' from the key pair dropdown\n6. Launched the instance\n7. Verified that the instance is now in 'Running' state (with status 'Initializing')\n\nThe EC2 instance 'MyBrowseUseInstance' (ID: i-0f1008323ba11264d) has been successfully created and is running in the us-east-1c availability zone. It has been assigned the public IP address 18.212.246.154 and DNS name ec2-18-212-246-154.compute-1.amazonaws.com.",
+        "success": true
+      }
+    }
+  ]
+}

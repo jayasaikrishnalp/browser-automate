@@ -1,0 +1,308 @@
+ SystemMessage 
+You are an AI agent designed to automate browser tasks. Your goal is to accomplish the ultimate task following the rules.
+
+# Input Format
+Task
+Previous steps
+Current URL
+Open Tabs
+Interactive Elements
+[index]<type>text</type>
+- index: Numeric identifier for interaction
+- type: HTML element type (button, input, etc.)
+- text: Element description
+Example:
+[33]<button>Submit Form</button>
+
+- Only elements with numeric indexes in [] are interactive
+- elements without [] provide only context
+
+# Response Rules
+1. RESPONSE FORMAT: You must ALWAYS respond with valid JSON in this exact format:
+{"current_state": {"evaluation_previous_goal": "Success|Failed|Unknown - Analyze the current elements and the image to check if the previous goals/actions are successful like intended by the task. Mention if something unexpected happened. Shortly state why/why not",
+"memory": "Description of what has been done and what you need to remember. Be very specific. Count here ALWAYS how many times you have done something and how many remain. E.g. 0 out of 10 websites analyzed. Continue with abc and xyz",
+"next_goal": "What needs to be done with the next immediate action"},
+"action":[{"one_action_name": {// action-specific parameter}}, // ... more actions in sequence]}
+
+2. ACTIONS: You can specify multiple actions in the list to be executed in sequence. But always specify only one action name per item. Use maximum {max_actions} actions per sequence.
+Common action sequences:
+- Form filling: [{"input_text": {"index": 1, "text": "username"}}, {"input_text": {"index": 2, "text": "password"}}, {"click_element": {"index": 3}}]
+- Navigation and extraction: [{"go_to_url": {"url": "https://example.com"}}, {"extract_content": {"goal": "extract the names"}}]
+- Actions are executed in the given order
+- If the page changes after an action, the sequence is interrupted and you get the new state.
+- Only provide the action sequence until an action which changes the page state significantly.
+- Try to be efficient, e.g. fill forms at once, or chain actions where nothing changes on the page
+- only use multiple actions if it makes sense.
+
+3. ELEMENT INTERACTION:
+- Only use indexes of the interactive elements
+- Elements marked with "[]Non-interactive text" are non-interactive
+
+4. NAVIGATION & ERROR HANDLING:
+- If no suitable elements exist, use other functions to complete the task
+- If stuck, try alternative approaches - like going back to a previous page, new search, new tab etc.
+- Handle popups/cookies by accepting or closing them
+- Use scroll to find elements you are looking for
+- If you want to research something, open a new tab instead of using the current tab
+- If captcha pops up, try to solve it - else try a different approach
+- If the page is not fully loaded, use wait action
+
+5. TASK COMPLETION:
+- Use the done action as the last action as soon as the ultimate task is complete
+- Dont use "done" before you are done with everything the user asked you, except you reach the last step of max_steps. 
+- If you reach your last step, use the done action even if the task is not fully finished. Provide all the information you have gathered so far. If the ultimate task is completly finished set success to true. If not everything the user asked for is completed set success in done to false!
+- If you have to do something repeatedly for example the task says for "each", or "for all", or "x times", count always inside "memory" how many times you have done it and how many remain. Don't stop until you have completed like the task asked you. Only call done after the last step.
+- Don't hallucinate actions
+- Make sure you include everything you found out for the ultimate task in the done text parameter. Do not just say you are done, but include the requested information of the task. 
+
+6. VISUAL CONTEXT:
+- When an image is provided, use it to understand the page layout
+- Bounding boxes with labels on their top right corner correspond to element indexes
+
+7. Form filling:
+- If you fill an input field and your action sequence is interrupted, most often something changed e.g. suggestions popped up under the field.
+
+8. Long tasks:
+- Keep track of the status and subresults in the memory. 
+
+9. Extraction:
+- If your task is to find information - call extract_content on the specific pages to get and store the information.
+Your responses must be always JSON with the specified format.
+
+ HumanMessage 
+Your ultimate task is: """Go to www.youtube.com, and search for latest videos on Anthropic channel""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.
+
+ HumanMessage 
+Example output:
+
+ AIMessage 
+
+
+ ToolMessage 
+Browser started
+
+ HumanMessage 
+[Your task history memory starts here]
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🔗  Navigated to https://www.youtube.com
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input Anthropic channel latest videos into index 3
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 7:
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: ⌨️  Input Anthropic into index 3
+
+ AIMessage 
+
+
+ ToolMessage 
+
+
+ HumanMessage 
+Action result: 🖱️  Clicked button with index 51:
+
+ HumanMessage 
+[Task history memory ends]
+[Current state starts here]
+The following is one-time information - if you need to remember it write it to memory:
+Current url: https://www.youtube.com/@anthropic-ai
+Available tabs:
+[TabInfo(page_id=0, url='https://www.youtube.com/@anthropic-ai', title='Anthropic - YouTube')]
+Interactive elements from top layer of the current page inside the viewport:
+[Start of page]
+[0]<button Guide/>
+[1]<a YouTube Home/>
+IN
+[2]<div />
+[3]<input text;Search;true;search_query;combobox/>
+[4]<button Clear search query/>
+[5]<button Search/>
+[6]<button Search with your voice/>
+[7]<a />
+[8]<button Settings/>
+[9]<a Sign in/>
+[10]<ytd-mini-guide-entry-renderer tab;Home/>
+[11]<a Home>Home
+Home/>
+[12]<ytd-mini-guide-entry-renderer tab;Shorts/>
+[13]<a Shorts>Shorts
+Shorts/>
+[14]<ytd-mini-guide-entry-renderer tab;Subscriptions/>
+[15]<a Subscriptions>Subscriptions
+Subscriptions/>
+[16]<ytd-mini-guide-entry-renderer tab;You/>
+[17]<a You>You
+You/>
+[18]<ytd-mini-guide-entry-renderer tab;History/>
+[19]<a History>History
+History/>
+[20]<img />
+[21]<div />
+Anthropic
+@anthropic-ai
+•
+114K subscribers
+•
+54 videos
+[22]<yt-description-preview-view-model />
+[23]<truncated-text We’re an AI safety and research company. Talk to our AI assistant Claude on claude.com. Download Claude on desktop, iOS, or Android.
+...more/>
+[24]<button Description. We’re an AI safety and research company. Talk to our AI as…tap for more.>...more/>
+[25]<a anthropic.com/>
+[26]<a button>and 1 more link/>
+[27]<button Subscribe/>
+[28]<tp-yt-paper-tabs tablist/>
+[29]<yt-tab-shape tab>Home/>
+[30]<yt-tab-shape tab>Videos/>
+[31]<yt-tab-shape tab>Shorts/>
+[32]<yt-tab-shape tab>Playlists/>
+[33]<yt-tab-shape Search/>
+[34]<button Search/>
+[35]<a A light refresh for Claude/>
+[36]<button More/>
+[37]<div slider;Seek slider/>
+[38]<button Pause (k)/>
+[39]<button Mute (m)/>
+0:00
+/
+0:21
+[40]<button Subtitles/closed captions unavailable;Subtitles/closed captions (c)/>
+[41]<button Settings;false/>
+[42]<button Full screen (f)/>
+[43]<a A light refresh for Claude/>
+26,738 views
+8 days ago
+We've done some spring cleaning. The Claude interface is now more refined, thanks to your feedback. We’ve also added new suggested prompts to inspire more conversations, right from the start.
+
+The refreshed look is rolling out today on
+[44]<a https://claude.ai/>
+and on our desktop apps.
+
+Try it out:
+https://claude.ai/download
+[45]<tp-yt-paper-button button;false/>
+[46]<a Read more/>
+[47]<a Claude 3.7 Sonnet and Claude Code/>
+[48]<a Play all/>
+[49]<a 0:40
+0:40
+Now playing/>
+[50]<img />
+[51]<a Claude 3.7 Sonnet with extended thinking by Anthropic 77,579 views 1 month ago 40 seconds>Claude 3.7 Sonnet with extended thinking/>
+[52]<a Anthropic/>
+77K views
+1 month ago
+[53]<button Action menu/>
+[54]<a 3:55
+3:55
+Now playing/>
+[55]<img />
+[56]<a Introducing Claude Code by Anthropic 525,505 views 1 month ago 3 minutes, 55 seconds>Introducing Claude Code/>
+[57]<a Anthropic/>
+525K views
+1 month ago
+Subtitles
+[58]<button Action menu/>
+Claude 3.5 Sonnet: Computer use
+Play all
+With the upgraded Claude 3.5 Sonnet, we’re introducing a new capability in beta: computer use. Developers can now direct Claude to use computers the way people do—by looking at a screen, moving a cursor, clicking, and typing text.
+
+While groundbreaking, computer use is still experimental—at times cumbersome and error-prone. We're releasing computer use early for feedback from developers.
+[59]<a 3:04
+3:04
+Now playing/>
+[60]<img />
+[61]<a Claude | Computer use for coding by Anthropic 256,301 views 5 months ago 3 minutes, 4 seconds>Claude | Computer use for coding/>
+[62]<a Anthropic/>
+256K views
+5 months ago
+Subtitles
+[63]<button Action menu/>
+[64]<a 2:05
+2:05
+Now playing/>
+[65]<img />
+[66]<a Claude | Computer use for orchestrating tasks by Anthropic 118,472 views 5 months ago 2 minutes, 5 seconds>Claude | Computer use for orchestrating tasks/>
+[67]<a Anthropic/>
+118K views
+5 months ago
+Subtitles
+[68]<button Action menu/>
+[69]<a 2:03
+2:03
+Now playing/>
+[70]<img />
+[71]<a Claude | Computer use for automating operations by Anthropic 308,696 views 5 months ago 2 minutes, 3 seconds>Claude | Computer use for automating operations/>
+[72]<a Anthropic/>
+308K views
+5 months ago
+Subtitles
+[73]<button Action menu/>
+[74]<a Research/>
+[75]<a Play all/>
+[76]<a 2:56
+2:56
+Now playing/>
+[77]<a 51:28
+51:28
+Now playing/>
+[78]<a 1:14:31
+1:14:31
+Now playing/>
+[79]<a 28:06
+28:06
+Now playing/>
+[80]<a 1:30:20
+1:30:20
+Now playing/>
+[81]<a 47:00
+47:00
+Now playing/>
+[82]<button Next/>
+... 689 pixels below - scroll or extract content to see more ...
+Current step: 6/100Current date and time: 2025-04-06 15:11
+
+ RESPONSE
+{
+  "current_state": {
+    "evaluation_previous_goal": "Success - I successfully clicked on the Anthropic channel (@anthropic-ai) link and now I'm on the Anthropic YouTube channel page. I can see all their latest videos displayed chronologically, including their most recent uploads.",
+    "memory": "I have successfully navigated to YouTube.com, searched for 'Anthropic', and accessed the official Anthropic channel (@anthropic-ai with 114K subscribers). I am now viewing their channel page which shows their latest videos. The most recent video is 'A light refresh for Claude' uploaded 8 days ago. Other recent videos include 'Claude 3.7 Sonnet with extended thinking' (1 month ago), 'Introducing Claude Code' (1 month ago), and several computer use demonstration videos from 5 months ago. I have successfully completed the task of finding the latest videos on the Anthropic channel.",
+    "next_goal": "Complete the task as I have successfully found the latest videos on the Anthropic channel"
+  },
+  "action": [
+    {
+      "done": {
+        "text": "I have successfully completed the task of finding the latest videos on the Anthropic channel. The most recent videos on the Anthropic YouTube channel are:\n\n1. 'A light refresh for Claude' - uploaded 8 days ago (26,738 views)\n2. 'Claude 3.7 Sonnet with extended thinking' - uploaded 1 month ago (77K views)\n3. 'Introducing Claude Code' - uploaded 1 month ago (525K views)\n4. Computer use demonstration videos (series) - uploaded 5 months ago\n   - 'Claude | Computer use for coding' (256K views)\n   - 'Claude | Computer use for orchestrating tasks' (118K views)\n   - 'Claude | Computer use for automating operations' (308K views)\n\nThe channel has a total of 54 videos and 114K subscribers.",
+        "success": true
+      }
+    }
+  ]
+}
