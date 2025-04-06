@@ -331,7 +331,7 @@ async def run_task(
 
 @app.get("/generate-markdown/{screenshot_dir}")
 async def generate_markdown(screenshot_dir: str):
-    """Generate a markdown file from the history.json file"""
+    """Generate a markdown file from the history.json file using template processor"""
     # Handle relative paths
     if os.path.basename(screenshot_dir) == screenshot_dir:
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -343,107 +343,143 @@ async def generate_markdown(screenshot_dir: str):
     if not os.path.exists(history_file):
         return JSONResponse({"error": "History file not found"}, status_code=404)
     
-    # Load history
-    with open(history_file, "r") as f:
-        history = json.load(f)
-    
-    # Create markdown content
-    markdown_content = f"# Browser Automation Task Report\n\n"
-    markdown_content += f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-    
-    # Extract task description
-    task_file = os.path.join(full_screenshot_dir, "task.txt")
-    if os.path.exists(task_file):
-        with open(task_file, "r") as f:
-            task_text = f.read()
-        markdown_content += f"## Task Description\n\n```\n{task_text}\n```\n\n"
-    
-    # Process each step in history
-    markdown_content += f"## Steps Executed\n\n"
-    
-    for item in history:
-        step_num = item["step"] + 1
-        description = item.get("description", f"Step {step_num}")
-        url = item.get("url", "")
-        title = item.get("title", "")
-        screenshot_path = item.get("screenshot_path", "")
-        requested_filename = item.get("requested_filename", "")
-        goal = item.get("goal", "")
+    try:
+        # Import the template processor module
+        import sys
+        import importlib
+        langchain_agent_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "langchain_agent")
+        sys.path.append(langchain_agent_path)
+        # Force reload the module to ensure we get the latest version
+        if "template_processor" in sys.modules:
+            importlib.reload(sys.modules["template_processor"])
+        from template_processor import generate_report_from_template
         
-        # Check if this page should have URL/title hidden
-        should_skip_url_title = (
-            ("aws.amazon.com" in url and "signin" in url.lower()) or
-            ("console.aws.amazon.com/ec2" in url and "Dashboard" in title) or
-            ("Web Services Sign" in title) or
-            (description and "Amazon Web Services Sign" in description) or
-            (description and "Dashboard | EC2" in description)
-        )
+        # Get the template path
+        template_path = os.path.join(langchain_agent_path, "templates", "tutorial_template.md")
         
-        # Combine step number, description, and goal in a single line
-        header_text = f"### Step {step_num}: {description}"
-        if goal:
-            header_text += f" - Goal: {goal}"
-        markdown_content += f"{header_text}\n\n"
+        # Generate the report using the template processor
+        report_path = generate_report_from_template(full_screenshot_dir, template_path)
         
-        # Only include URL and title if not in the skip list
-        if url and not should_skip_url_title:
-            markdown_content += f"**URL:** [{url}]({url})\n\n"
+        # Read the generated report
+        with open(report_path, "r") as f:
+            markdown_content = f.read()
         
-        if title and title != description and not should_skip_url_title:
-            markdown_content += f"**Page Title:** {title}\n\n"
+        # Also save a copy in the screenshot directory
+        markdown_file = os.path.join(full_screenshot_dir, "report.md")
+        with open(markdown_file, "w") as f:
+            f.write(markdown_content)
         
-        if screenshot_path:
-            # Fix image path for markdown - use the actual screenshot filename from history.json
-            dir_name = os.path.basename(full_screenshot_dir)
+        return {
+            "status": "success", 
+            "markdown_file": markdown_file,
+            "content": markdown_content
+        }
+    except Exception as e:
+        # Fallback to the original method if template processing fails
+        print(f"Error using template processor: {e}")
+        print("Falling back to default markdown generation")
+        
+        # Load history
+        with open(history_file, "r") as f:
+            history = json.load(f)
+        
+        # Create markdown content
+        markdown_content = f"# Browser Automation Task Report\n\n"
+        markdown_content += f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        
+        # Extract task description
+        task_file = os.path.join(full_screenshot_dir, "task.txt")
+        if os.path.exists(task_file):
+            with open(task_file, "r") as f:
+                task_text = f.read()
+            markdown_content += f"## Task Description\n\n```\n{task_text}\n```\n\n"
+        
+        # Process each step in history
+        markdown_content += f"## Steps Executed\n\n"
+        
+        for item in history:
+            step_num = item["step"] + 1
+            description = item.get("description", f"Step {step_num}")
+            url = item.get("url", "")
+            title = item.get("title", "")
+            screenshot_path = item.get("screenshot_path", "")
+            requested_filename = item.get("requested_filename", "")
+            goal = item.get("goal", "")
             
-            # Create a more reliable markdown image reference
-            # Use the filename as the alt text if no description
-            img_alt = description or os.path.basename(screenshot_path)
-            markdown_content += f"![{img_alt}](/images/{dir_name}/{screenshot_path})\n\n"
+            # Check if this page should have URL/title hidden
+            should_skip_url_title = (
+                ("aws.amazon.com" in url and "signin" in url.lower()) or
+                ("console.aws.amazon.com/ec2" in url and "Dashboard" in title) or
+                ("Web Services Sign" in title) or
+                (description and "Amazon Web Services Sign" in description) or
+                (description and "Dashboard | EC2" in description)
+            )
             
-            # Show filename information (simplified to reduce clutter)
-            if requested_filename and requested_filename != screenshot_path:
-                markdown_content += f"*Requested filename: `{requested_filename}`*\n\n"
-                markdown_content += f"*Actual filename: `{screenshot_path}`*\n\n"
-            else:
-                markdown_content += f"*Filename: `{screenshot_path}`*\n\n"
-    
-    # Add results section if final step has a result
-    if history and "goal" in history[-1] and history[-1]["goal"].lower().startswith("complete"):
-        markdown_content += f"## Results\n\n"
-        markdown_content += f"Task completed successfully.\n\n"
-    
-    # Add a summary of screenshot mapping
-    markdown_content += f"## Screenshot Summary\n\n"
-    
-    # Create a cleaner table format
-    markdown_content += f"| Step | Description | Actual Filename |\n"
-    markdown_content += f"|:----:|-------------|----------------|\n"
-    
-    for item in history:
-        if not item.get("screenshot_path"):
-            continue
+            # Combine step number, description, and goal in a single line
+            header_text = f"### Step {step_num}: {description}"
+            if goal:
+                header_text += f" - Goal: {goal}"
+            markdown_content += f"{header_text}\n\n"
             
-        step_num = item["step"] + 1
-        description = item.get("description", f"Step {step_num}")
-        # Truncate description if too long to avoid breaking the table
-        if len(description) > 40:
-            description = description[:37] + "..."
+            # Only include URL and title if not in the skip list
+            if url and not should_skip_url_title:
+                markdown_content += f"**URL:** [{url}]({url})\n\n"
+            
+            if title and title != description and not should_skip_url_title:
+                markdown_content += f"**Page Title:** {title}\n\n"
+            
+            if screenshot_path:
+                # Fix image path for markdown - use the actual screenshot filename from history.json
+                dir_name = os.path.basename(full_screenshot_dir)
+                
+                # Create a more reliable markdown image reference
+                # Use the filename as the alt text if no description
+                img_alt = description or os.path.basename(screenshot_path)
+                markdown_content += f"![{img_alt}](/images/{dir_name}/{screenshot_path})\n\n"
+                
+                # Show filename information (simplified to reduce clutter)
+                if requested_filename and requested_filename != screenshot_path:
+                    markdown_content += f"*Requested filename: `{requested_filename}`*\n\n"
+                    markdown_content += f"*Actual filename: `{screenshot_path}`*\n\n"
+                else:
+                    markdown_content += f"*Filename: `{screenshot_path}`*\n\n"
         
-        actual = item.get("screenshot_path", "-")
+        # Add results section if final step has a result
+        if history and "goal" in history[-1] and history[-1]["goal"].lower().startswith("complete"):
+            markdown_content += f"## Results\n\n"
+            markdown_content += f"Task completed successfully.\n\n"
         
-        markdown_content += f"| {step_num} | {description} | `{actual}` |\n"
-    
-    # Save markdown file
-    markdown_file = os.path.join(full_screenshot_dir, "report.md")
-    with open(markdown_file, "w") as f:
-        f.write(markdown_content)
-    
-    return {
-        "status": "success", 
-        "markdown_file": markdown_file,
-        "content": markdown_content
-    }
+        # Add a summary of screenshot mapping
+        markdown_content += f"## Screenshot Summary\n\n"
+        
+        # Create a cleaner table format
+        markdown_content += f"| Step | Description | Actual Filename |\n"
+        markdown_content += f"|:----:|-------------|----------------|\n"
+        
+        for item in history:
+            if not item.get("screenshot_path"):
+                continue
+                
+            step_num = item["step"] + 1
+            description = item.get("description", f"Step {step_num}")
+            # Truncate description if too long to avoid breaking the table
+            if len(description) > 40:
+                description = description[:37] + "..."
+            
+            actual = item.get("screenshot_path", "-")
+            
+            markdown_content += f"| {step_num} | {description} | `{actual}` |\n"
+        
+        # Save markdown file
+        markdown_file = os.path.join(full_screenshot_dir, "report.md")
+        with open(markdown_file, "w") as f:
+            f.write(markdown_content)
+        
+        return {
+            "status": "success", 
+            "markdown_file": markdown_file,
+            "content": markdown_content
+        }
 
 @app.get("/get-results/{screenshot_dir}")
 async def get_results(screenshot_dir: str):
@@ -489,6 +525,18 @@ async def get_image(screenshot_dir: str, image_name: str):
         image_path = f"{screenshot_dir}/{image_name}"
     
     if not os.path.exists(image_path):
+        return JSONResponse({"error": "Image not found"}, status_code=404)
+        
+    return FileResponse(image_path)
+
+@app.get("/get-image/{screenshot_dir}/{image_folder}/{image_name}")
+async def get_report_image(screenshot_dir: str, image_folder: str, image_name: str):
+    """Serve images from the reports folder"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    image_path = os.path.join(current_dir, f"reports/{image_folder}/{image_name}")
+    
+    if not os.path.exists(image_path):
+        print(f"Image not found: {image_path}")
         return JSONResponse({"error": "Image not found"}, status_code=404)
         
     return FileResponse(image_path)
@@ -677,6 +725,64 @@ async def download_mp4(screenshot_dir: str):
         return JSONResponse({"error": "MP4 file not found"}, status_code=404)
     
     return FileResponse(mp4_file, media_type="video/mp4", filename=f"{screenshot_dir}_recording.mp4")
+
+@app.get("/download-markdown/{screenshot_dir}")
+async def download_markdown(screenshot_dir: str):
+    """Download the markdown report for a run with all images as a zip file."""
+    # Make sure we have the correct full path
+    if os.path.basename(screenshot_dir) == screenshot_dir:
+        # If it's just a directory name, assume it's in web-ui/agent_screenshots
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        full_screenshot_dir = os.path.join(current_dir, f"agent_screenshots/{screenshot_dir}")
+        # Check if the report exists in the reports folder
+        reports_dir = os.path.join(current_dir, "reports")
+        report_images_dir = os.path.join(reports_dir, f"{screenshot_dir}_images")
+    else:
+        full_screenshot_dir = screenshot_dir
+        # Extract the run name from the path
+        run_name = os.path.basename(screenshot_dir)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        reports_dir = os.path.join(current_dir, "reports")
+        report_images_dir = os.path.join(reports_dir, f"{run_name}_images")
+    
+    # If markdown file doesn't exist yet, try to generate it
+    if not os.path.exists(report_images_dir):
+        try:
+            # Try to generate markdown report
+            result = await generate_markdown(screenshot_dir)
+            if "error" in result:
+                return JSONResponse({"error": result["error"]}, status_code=500)
+        except Exception as e:
+            return JSONResponse({"error": f"Error generating markdown report: {str(e)}"}, status_code=500)
+    
+    # Check if the report images directory exists
+    if not os.path.exists(report_images_dir):
+        return JSONResponse({"error": "Report images directory not found"}, status_code=404)
+    
+    # Create a zip file
+    import zipfile
+    import io
+    
+    # Create a BytesIO object to hold the zip file in memory
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+        # Add all files from the report_images_dir to the zip file
+        for root, _, files in os.walk(report_images_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Add the file to the zip with a relative path
+                zipf.write(file_path, arcname=os.path.basename(file_path))
+    
+    # Seek to the beginning of the BytesIO object
+    zip_buffer.seek(0)
+    
+    # Return the zip file as a streaming response
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={screenshot_dir}_report.zip"}
+    )
 
 @app.post("/stop-task/{screenshot_dir}")
 async def stop_task(screenshot_dir: str):
