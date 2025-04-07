@@ -128,19 +128,52 @@ def generate_report_from_template(run_dir, template_path):
     
     # Find matching screenshots for each step
     step_screenshots = {}
-    for filename in [s.get("filename") for s in screenshots if s.get("filename") != "session.gif"]:
-        for i, (step, screenshot) in enumerate(steps):
-            # Try to match screenshot to step
-            if screenshot and screenshot.lower() in filename.lower():
-                step_screenshots[i] = filename
-                break
-            # For steps without explicit screenshot matches
-            elif i not in step_screenshots:
-                keywords = step.lower().split()
-                for keyword in keywords:
-                    if len(keyword) > 3 and keyword in filename.lower():
-                        step_screenshots[i] = filename
+    
+    # First try to use history.json for more accurate screenshot mapping
+    if history and isinstance(history, list):
+        print(f"Using history.json for screenshot mapping with {len(history)} entries")
+        # Sort history entries by step number to ensure correct order
+        sorted_history = sorted(history, key=lambda x: x.get("step", 0) if isinstance(x.get("step"), int) else 0)
+        
+        # Create a mapping of steps to screenshots from history
+        for i, (step, _) in enumerate(steps):
+            if i < len(sorted_history) and sorted_history[i].get("screenshot_path"):
+                screenshot_file = sorted_history[i].get("screenshot_path")
+                # Make sure the file exists in the run directory
+                if os.path.exists(os.path.join(run_dir, screenshot_file)):
+                    step_screenshots[i] = screenshot_file
+                    print(f"Matched step {i+1} with screenshot {screenshot_file} from history")
+    
+    # Fallback to the original matching logic if history didn't provide matches for all steps
+    screenshot_files = [f for f in os.listdir(run_dir) if f.endswith(".png") and f != "session.gif"]
+    # Sort screenshot files to ensure consistent order
+    screenshot_files.sort()
+    
+    for i, (step, screenshot) in enumerate(steps):
+        if i not in step_screenshots:  # Only process steps that don't have a screenshot yet
+            # First try to match by explicit screenshot name
+            for filename in screenshot_files:
+                if screenshot and screenshot.lower() in filename.lower():
+                    step_screenshots[i] = filename
+                    print(f"Matched step {i+1} with screenshot {filename} using screenshot name")
+                    break
+            
+            # If still no match, try keyword matching
+            if i not in step_screenshots:
+                for filename in screenshot_files:
+                    keywords = step.lower().split()
+                    for keyword in keywords:
+                        if len(keyword) > 3 and keyword in filename.lower():
+                            step_screenshots[i] = filename
+                            print(f"Matched step {i+1} with screenshot {filename} using keyword {keyword}")
+                            break
+                    if i in step_screenshots:
                         break
+            
+            # If still no match and we have screenshots left, use the next available one
+            if i not in step_screenshots and i < len(screenshot_files):
+                step_screenshots[i] = screenshot_files[i]
+                print(f"Assigned step {i+1} with screenshot {screenshot_files[i]} by position")
     
     # Prepare template data
     # Extract a title from the task description
@@ -242,8 +275,15 @@ def generate_report_from_template(run_dir, template_path):
     
     # Update the paths in the template data
     for i, step_data in enumerate(template_data["STEPS"]):
-        if i < len(screenshot_files):
-            # Use the filename from the screenshot_files list
+        # Check if this step has a matched screenshot
+        if i in step_screenshots:
+            filename = step_screenshots[i]
+            # Use the correct route for serving images in web version
+            template_data["STEPS"][i]["SCREENSHOT_PATH"] = f"/get-image/{run_name}/{run_name}_images/{filename}"
+            # Use relative paths for downloadable version
+            download_template_data["STEPS"][i]["SCREENSHOT_PATH"] = f"./{filename}"
+        # Fallback to ordered screenshots if no match found
+        elif i < len(screenshot_files):
             filename = screenshot_files[i]
             # Use the correct route for serving images in web version
             template_data["STEPS"][i]["SCREENSHOT_PATH"] = f"/get-image/{run_name}/{run_name}_images/{filename}"

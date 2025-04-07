@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 import subprocess
 import os
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 import re
@@ -330,8 +331,8 @@ async def run_task(
     return {"message": "Task started", "screenshot_dir": screenshot_dir}
 
 @app.get("/generate-markdown/{screenshot_dir}")
-async def generate_markdown(screenshot_dir: str):
-    """Generate a markdown file from the history.json file using template processor"""
+async def generate_markdown(screenshot_dir: str, language: str = "english"):
+    """Generate a markdown file from the history.json file using template processor or history_markdown_generator"""
     # Handle relative paths
     if os.path.basename(screenshot_dir) == screenshot_dir:
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -343,37 +344,83 @@ async def generate_markdown(screenshot_dir: str):
     if not os.path.exists(history_file):
         return JSONResponse({"error": "History file not found"}, status_code=404)
     
+    # Check if a report in the requested language already exists
+    run_name = os.path.basename(full_screenshot_dir)
+    reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_screenshots/reports")
+    lang_suffix = "" if language.lower() == "english" else f"_{language.lower()}"
+    existing_report = os.path.join(reports_dir, f"{run_name}{lang_suffix}_history_report.md")
+    
+    if os.path.exists(existing_report):
+        # Use the existing report
+        with open(existing_report, "r") as f:
+            markdown_content = f.read()
+        
+        return {
+            "status": "success", 
+            "markdown_file": existing_report,
+            "content": markdown_content
+        }
+    
     try:
-        # Import the template processor module
+        # Import the history markdown generator module
         import sys
         import importlib
         langchain_agent_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "langchain_agent")
         sys.path.append(langchain_agent_path)
-        # Force reload the module to ensure we get the latest version
-        if "template_processor" in sys.modules:
-            importlib.reload(sys.modules["template_processor"])
-        from template_processor import generate_report_from_template
         
-        # Get the template path
-        template_path = os.path.join(langchain_agent_path, "templates", "tutorial_template.md")
-        
-        # Generate the report using the template processor
-        report_path = generate_report_from_template(full_screenshot_dir, template_path)
-        
-        # Read the generated report
-        with open(report_path, "r") as f:
-            markdown_content = f.read()
-        
-        # Also save a copy in the screenshot directory
-        markdown_file = os.path.join(full_screenshot_dir, "report.md")
-        with open(markdown_file, "w") as f:
-            f.write(markdown_content)
-        
-        return {
-            "status": "success", 
-            "markdown_file": markdown_file,
-            "content": markdown_content
-        }
+        # Try to use history_markdown_generator first
+        try:
+            # Force reload the module to ensure we get the latest version
+            if "history_markdown_generator" in sys.modules:
+                importlib.reload(sys.modules["history_markdown_generator"])
+            from history_markdown_generator import generate_markdown_from_history
+            
+            # Generate the report using the history markdown generator
+            report_path = generate_markdown_from_history(full_screenshot_dir, None, language)
+            
+            # Read the generated report
+            with open(report_path, "r") as f:
+                markdown_content = f.read()
+            
+            # Also save a copy in the screenshot directory
+            markdown_file = os.path.join(full_screenshot_dir, f"report{lang_suffix}.md")
+            with open(markdown_file, "w") as f:
+                f.write(markdown_content)
+            
+            return {
+                "status": "success", 
+                "markdown_file": markdown_file,
+                "content": markdown_content
+            }
+        except Exception as e:
+            print(f"Error using history markdown generator: {e}")
+            print("Falling back to template processor")
+            
+            # Force reload the module to ensure we get the latest version
+            if "template_processor" in sys.modules:
+                importlib.reload(sys.modules["template_processor"])
+            from template_processor import generate_report_from_template
+            
+            # Get the template path
+            template_path = os.path.join(langchain_agent_path, "templates", "tutorial_template.md")
+            
+            # Generate the report using the template processor
+            report_path = generate_report_from_template(full_screenshot_dir, template_path)
+            
+            # Read the generated report
+            with open(report_path, "r") as f:
+                markdown_content = f.read()
+            
+            # Also save a copy in the screenshot directory
+            markdown_file = os.path.join(full_screenshot_dir, "report.md")
+            with open(markdown_file, "w") as f:
+                f.write(markdown_content)
+            
+            return {
+                "status": "success", 
+                "markdown_file": markdown_file,
+                "content": markdown_content
+            }
     except Exception as e:
         # Fallback to the original method if template processing fails
         print(f"Error using template processor: {e}")
@@ -540,6 +587,30 @@ async def get_report_image(screenshot_dir: str, image_folder: str, image_name: s
         return JSONResponse({"error": "Image not found"}, status_code=404)
         
     return FileResponse(image_path)
+
+@app.get("/get-image/{screenshot_dir}/{image_name}")
+async def get_screenshot_image(screenshot_dir: str, image_name: str):
+    """Serve images directly from the screenshots folder"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Try to find the image in several possible locations
+    possible_paths = [
+        # In the screenshots directory
+        os.path.join(current_dir, f"agent_screenshots/{screenshot_dir}/{image_name}"),
+        # In the reports images directory
+        os.path.join(current_dir, f"agent_screenshots/reports/{screenshot_dir}_images/{image_name}"),
+        # In the root of reports images directory
+        os.path.join(current_dir, f"agent_screenshots/reports/{screenshot_dir}_images", image_name)
+    ]
+    
+    for path in possible_paths:
+        if os.path.exists(path):
+            return FileResponse(path)
+    
+    # If image not found in any location
+    print(f"Image not found: {image_name} for {screenshot_dir}")
+    print(f"Tried paths: {possible_paths}")
+    return JSONResponse({"error": "Image not found"}, status_code=404)
 
 @app.get("/download-logs/{screenshot_dir}")
 async def download_logs(screenshot_dir: str):
@@ -755,9 +826,18 @@ async def download_markdown(screenshot_dir: str):
         except Exception as e:
             return JSONResponse({"error": f"Error generating markdown report: {str(e)}"}, status_code=500)
     
-    # Check if the report images directory exists
+    # Create the report images directory if it doesn't exist
     if not os.path.exists(report_images_dir):
-        return JSONResponse({"error": "Report images directory not found"}, status_code=404)
+        os.makedirs(report_images_dir, exist_ok=True)
+        
+        # Copy all images from the screenshot directory to the report images directory
+        screenshot_images_dir = os.path.join(full_screenshot_dir)
+        if os.path.exists(screenshot_images_dir):
+            for file in os.listdir(screenshot_images_dir):
+                if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg") or file.endswith(".gif"):
+                    source_path = os.path.join(screenshot_images_dir, file)
+                    dest_path = os.path.join(report_images_dir, file)
+                    shutil.copy2(source_path, dest_path)
     
     # Create a zip file
     import zipfile
@@ -766,13 +846,46 @@ async def download_markdown(screenshot_dir: str):
     # Create a BytesIO object to hold the zip file in memory
     zip_buffer = io.BytesIO()
     
+    # Find the markdown file
+    run_name = os.path.basename(full_screenshot_dir)
+    reports_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent_screenshots/reports")
+    markdown_files = [f for f in os.listdir(reports_dir) if f.startswith(run_name) and f.endswith(".md")]
+    
     with zipfile.ZipFile(zip_buffer, 'w') as zipf:
+        # Add the markdown file to the zip with modified image paths for local viewing
+        if markdown_files:
+            for md_file in markdown_files:
+                md_path = os.path.join(reports_dir, md_file)
+                
+                # Read the markdown content
+                with open(md_path, 'r', encoding='utf-8') as f:
+                    md_content = f.read()
+                
+                # Replace web image paths with local paths for downloaded version
+                # Look for pattern: ![Step X Screenshot](/get-image/run_name/image.png)<!-- LOCAL_PATH:./image.png -->
+                # Replace with: ![Step X Screenshot](./image.png)
+                import re
+                md_content = re.sub(r'!\[(.*?)\]\([^)]+\)<!-- LOCAL_PATH:(.*?) -->', r'![\1](\2)', md_content)
+                
+                # Write the modified content to a temporary file
+                temp_md_path = os.path.join(os.path.dirname(md_path), f"temp_{md_file}")
+                with open(temp_md_path, 'w', encoding='utf-8') as f:
+                    f.write(md_content)
+                
+                # Add the modified file to the zip
+                zipf.write(temp_md_path, arcname=md_file)
+                
+                # Remove the temporary file
+                os.remove(temp_md_path)
+        
         # Add all files from the report_images_dir to the zip file
-        for root, _, files in os.walk(report_images_dir):
-            for file in files:
-                file_path = os.path.join(root, file)
-                # Add the file to the zip with a relative path
-                zipf.write(file_path, arcname=os.path.basename(file_path))
+        if os.path.exists(report_images_dir):
+            for root, _, files in os.walk(report_images_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # Add the file to the zip with a relative path to preserve folder structure
+                    rel_path = os.path.join(f"{run_name}_images", os.path.basename(file_path))
+                    zipf.write(file_path, arcname=rel_path)
     
     # Seek to the beginning of the BytesIO object
     zip_buffer.seek(0)

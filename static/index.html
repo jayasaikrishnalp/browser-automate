@@ -482,22 +482,37 @@
                         <button onclick="downloadMp4()" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50" id="downloadMp4Btn">
                             <i class="fas fa-video mr-2"></i> Download MP4
                         </button>
-                        <button onclick="generateMarkdownReport(screenshotDir)" class="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50" id="generateMarkdownBtn">
-                            <i class="fas fa-file-alt mr-2"></i> Generate Markdown Report
-                        </button>
+
                     </div>
                 </div>
                 
                 <!-- Markdown Tab Content -->
                 <div id="markdownTab" class="tab-content">
                     <div class="p-4 border-b text-sm font-medium flex justify-between items-center">
-                        <span>Markdown Report</span>
-                        <button onclick="downloadMarkdownReport()" class="px-3 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" id="downloadMarkdownBtn">
-                            <i class="fas fa-download mr-1"></i> Download Report
-                        </button>
+                        <div class="flex items-center">
+                            <span class="mr-4">Markdown Report</span>
+                            <div class="flex items-center">
+                                <label for="reportLanguage" class="mr-2 text-xs">Language:</label>
+                                <select id="reportLanguage" class="text-xs border rounded px-2 py-1">
+                                    <option value="english">English</option>
+                                    <option value="telugu">తెలుగు</option>
+                                    <option value="hindi">हिंदी</option>
+                                    <option value="spanish">Español</option>
+                                    <option value="french">Français</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <button onclick="generateMarkdownReport(screenshotDir)" class="px-3 py-1 text-xs font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors mr-2" id="generateMarkdownBtn">
+                                <i class="fas fa-file-alt mr-1"></i> Generate Report
+                            </button>
+                            <button onclick="downloadMarkdownReport()" class="px-3 py-1 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" id="downloadMarkdownBtn">
+                                <i class="fas fa-download mr-1"></i> Download Report
+                            </button>
+                        </div>
                     </div>
                     <div id="markdownViewer" class="p-4 overflow-y-auto max-h-[calc(100vh-150px)] bg-white prose prose-sm max-w-none">
-                        <p class="text-gray-600">Click the "Generate Markdown Report" button in the Downloads tab to create a report.</p>
+                        <p class="text-gray-600">Click the "Generate Report" button above to create a markdown report.</p>
                     </div>
                 </div>
             </div>
@@ -1035,15 +1050,19 @@ Scroll down to read more about the topic
                 dirNameOnly = dirParts[dirParts.length - 1];
             }
             
+            // Get the selected language
+            const languageSelect = document.getElementById('reportLanguage');
+            const selectedLanguage = languageSelect ? languageSelect.value : 'english';
+            
             document.getElementById('markdownViewer').innerHTML = 
                 `<div class="flex items-center justify-center p-8">
                     <div class="spinner mr-3"></div>
-                    <p>Generating markdown report...</p>
+                    <p>Generating markdown report in ${selectedLanguage}...</p>
                 </div>`;
             switchTab('markdown');
             
             // సరైన URL ఫార్మాట్ ఉపయోగించడం
-            fetch(`/generate-markdown/${dirNameOnly}`)
+            fetch(`/generate-markdown/${dirNameOnly}?language=${selectedLanguage}`)
             .then(res => res.json())
             .then(data => {
                 if (data.status === "success" && data.content) {

@@ -1,5 +1,17 @@
 # Changes Log
 
+## 2025-04-07
+
+### Improved Markdown Report Generation
+
+1. Fixed image paths in markdown reports to ensure they display correctly in both web UI and downloaded reports
+2. Added special comment tags to handle different image path formats for web viewing vs local viewing
+3. Enhanced the download_markdown endpoint to replace web image paths with local paths when downloading
+4. Added a new API endpoint (/get-image/{screenshot_dir}/{image_name}) to serve images directly from screenshots folder
+5. Moved "Generate Markdown Report" button from Downloads tab to Markdown tab for better user experience
+6. Updated the UI text to reflect the new button location
+7. Ensured step descriptions are concise (50-100 tokens) for better readability
+
 ## 2025-04-06
 
 ### Added Markdown Report Viewing and Downloading in Web Interface
